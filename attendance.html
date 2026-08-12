@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Overview - SSKLAM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* Top Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title i {
+            font-size: 22px;
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.15);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .back-dashboard-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-dashboard-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        /* Main Overview Banner */
+        .overview-banner {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .percentage-box {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .percent-num {
+            font-size: 38px;
+            font-weight: 800;
+            color: #22c55e;
+            letter-spacing: -1px;
+            text-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .percent-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+        }
+
+        .badge-warning {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .badge-neutral {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 15px;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .stat-name {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Month Strips Wrapper */
+        .month-strips-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .month-strip {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .month-strip:hover {
+            transform: translateY(-2px);
+            background: rgba(30, 41, 59, 0.95);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .month-strip.current-month {
+            border: 1px solid #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            background: rgba(30, 41, 59, 0.85);
+        }
+
+        .strip-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .strip-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .strip-text h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .strip-text p {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .strip-arrow {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .current-tag {
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state i {
+            font-size: 38px;
+            margin-bottom: 10px;
+            display: block;
+            color: #38bdf8;
+            opacity: 0.6;
+        }
+
+        .empty-state h3 {
+            font-size: 15px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Calendar Pop-Up Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 15px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-card {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-modal-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* Legend */
+        .legend-wrapper {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .dot-icon {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .dot-present { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .dot-absent { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+        .dot-leave { background: #eab308; box-shadow: 0 0 6px #eab308; }
+        .dot-holiday { background: #64748b; }
+
+        /* Calendar Grid */
+        .calendar-days-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .day-cell {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .day-cell.empty {
+            background: transparent;
+            border: none;
+        }
+
+        .day-cell .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 3px;
+        }
+
+        .day-cell.is-present { border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.1); }
+        .day-cell.is-present .status-dot { background: #22c55e; box-shadow: 0 0 4px #22c55e; }
+
+        .day-cell.is-absent { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+        .day-cell.is-absent .status-dot { background: #ef4444; box-shadow: 0 0 4px #ef4444; }
+
+        .day-cell.is-leave { border-color: rgba(234, 179, 8, 0.3); background: rgba(234, 179, 8, 0.1); }
+        .day-cell.is-leave .status-dot { background: #eab308; box-shadow: 0 0 4px #eab308; }
+
+        .day-cell.is-holiday { border-color: rgba(100, 116, 139, 0.2); opacity: 0.6; }
+        .day-cell.is-holiday .status-dot { background: #64748b; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <div class="header-title">
+                <i class="fa-solid fa-calendar-check"></i>
+                <h1>Attendance Overview</h1>
+            </div>
+            <a href="database.html" class="back-dashboard-btn">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="overview-banner">
+            <div class="banner-top">
+                <div class="percentage-box">
+                    <span class="percent-num" id="overallPercentage">--%</span>
+                    <span class="percent-label">Overall Rate</span>
+                </div>
+                <div class="status-badge badge-neutral" id="statusBadge">
+                    <i class="fa-solid fa-circle-info"></i> No Data Yet
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-name">Total Days</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: #4ade80;" id="statPresent">0</div>
+                    <div class="stat-name">Present</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: #f87171;" id="statAbsent">0</div>
+                    <div class="stat-name">Absent</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="attendanceStripsContainer"></div>
+
+    </div>
+
+    <div class="modal-overlay" id="calendarModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-calendar-alt" style="color: #38bdf8;"></i>
+                    <span id="modalMonthTitle">Month Attendance</span>
+                </div>
+                <button class="close-modal-btn" onclick="closeCalendarModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="legend-wrapper">
+                <div class="legend-item"><span class="dot-icon dot-present"></span> Present</div>
+                <div class="legend-item"><span class="dot-icon dot-absent"></span> Absent</div>
+                <div class="legend-item"><span class="dot-icon dot-leave"></span> Leave</div>
+                <div class="legend-item"><span class="dot-icon dot-holiday"></span> Holiday</div>
+            </div>
+
+            <div class="calendar-days-header">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // Reads attendance data from LocalStorage set by Teacher Module
+        // Schema: { "August 2026": { totalDays: 31, startDayOffset: 6, records: { 1: "present", 2: "absent", ... } } }
+        let attendanceData = JSON.parse(localStorage.getItem('schoolAttendance')) || {};
+
+        function initAttendanceView() {
+            const container = document.getElementById('attendanceStripsContainer');
+            container.innerHTML = '';
+
+            const monthNames = Object.keys(attendanceData);
+
+            // If teacher has not published any attendance yet
+            if (monthNames.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-calendar-minus"></i>
+                        <h3>No Attendance Records Published Yet</h3>
+                        <p>When teachers update attendance, monthwise records and overall percentage will be calculated here automatically.</p>
+                    </div>
+                `;
+                updateOverviewStats(0, 0, 0);
+                return;
+            }
+
+            // Calculate Overall Stats
+            let grandTotalWorkingDays = 0;
+            let grandPresent = 0;
+            let grandAbsent = 0;
+
+            monthNames.forEach(month => {
+                const data = attendanceData[month];
+                if (data && data.records) {
+                    Object.values(data.records).forEach(status => {
+                        if (status === 'present') {
+                            grandPresent++;
+                            grandTotalWorkingDays++;
+                        } else if (status === 'absent') {
+                            grandAbsent++;
+                            grandTotalWorkingDays++;
+                        } else if (status === 'leave') {
+                            // Leave counts in working days or handled as needed
+                            grandTotalWorkingDays++;
+                        }
+                    });
+                }
+            });
+
+            updateOverviewStats(grandTotalWorkingDays, grandPresent, grandAbsent);
+
+            // Render Current Month & Previous Months Strips
+            const currentMonthKey = monthNames[0]; // Assuming first key or latest month
+
+            // Section 1: Current Month
+            let html = `
+                <div class="section-title">
+                    <i class="fa-solid fa-clock"></i> Current Academic Month
+                </div>
+                <div class="month-strips-wrapper">
+                    ${createStripHTML(currentMonthKey, true)}
+                </div>
+            `;
+
+            // Section 2: Previous Months (if any)
+            if (monthNames.length > 1) {
+                html += `
+                    <div class="section-title">
+                        <i class="fa-solid fa-history"></i> Previous Months History
+                    </div>
+                    <div class="month-strips-wrapper">
+                `;
+                for (let i = 1; i < monthNames.length; i++) {
+                    html += createStripHTML(monthNames[i], false);
+                }
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function createStripHTML(monthKey, isCurrent) {
+            const data = attendanceData[monthKey] || { records: {} };
+            let pCount = 0;
+            let totalCount = 0;
+
+            if (data.records) {
+                Object.values(data.records).forEach(st => {
+                    if (st === 'present') { pCount++; totalCount++; }
+                    else if (st === 'absent' || st === 'leave') { totalCount++; }
+                });
+            }
+
+            const monthRate = totalCount > 0 ? ((pCount / totalCount) * 100).toFixed(1) : 0;
+            const activeClass = isCurrent ? 'current-month' : '';
+            const activeTag = isCurrent ? '<span class="current-tag">ACTIVE</span>' : '';
+            const iconBg = isCurrent ? '' : 'style="background: rgba(255,255,255,0.05); color: #cbd5e1;"';
+
+            return `
+                <div class="month-strip ${activeClass}" onclick="openCalendarModal('${monthKey}')">
+                    <div class="strip-info">
+                        <div class="strip-icon" ${iconBg}><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="strip-text">
+                            <h3>${monthKey} ${activeTag}</h3>
+                            <p>Present: ${pCount} / ${totalCount} Days • Rate: ${monthRate}%</p>
+                        </div>
+                    </div>
+                    <div class="strip-arrow">
+                        <span>View Calendar</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateOverviewStats(total, present, absent) {
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statPresent').innerText = present;
+            document.getElementById('statAbsent').innerText = absent;
+
+            const badge = document.getElementById('statusBadge');
+            const percentElem = document.getElementById('overallPercentage');
+
+            if (total === 0) {
+                percentElem.innerText = '--%';
+                percentElem.style.color = '#94a3b8';
+                badge.className = 'status-badge badge-neutral';
+                badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> No Data Yet`;
+            } else {
+                const rate = ((present / total) * 100).toFixed(1);
+                percentElem.innerText = `${rate}%`;
+
+                if (rate >= 75) {
+                    percentElem.style.color = '#22c55e';
+                    badge.className = 'status-badge badge-safe';
+                    badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Safe Zone`;
+                } else {
+                    percentElem.style.color = '#f87171';
+                    badge.className = 'status-badge badge-warning';
+                    badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Shortage Warning`;
+                }
+            }
+        }
+
+        function openCalendarModal(monthName) {
+            const modal = document.getElementById('calendarModal');
+            const title = document.getElementById('modalMonthTitle');
+            const grid = document.getElementById('calendarGrid');
+
+            title.innerText = `${monthName} Attendance Calendar`;
+            grid.innerHTML = '';
+
+            const data = attendanceData[monthName];
+            if (!data) return;
+
+            // Offset empty cells
+            for (let i = 0; i < (data.startDayOffset || 0); i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day-cell empty';
+                grid.appendChild(emptyCell);
+            }
+
+            // Days
+            const totalDays = data.totalDays || 30;
+            for (let day = 1; day <= totalDays; day++) {
+                const status = (data.records && data.records[day]) ? data.records[day] : 'holiday';
+                const cell = document.createElement('div');
+                cell.className = `day-cell is-${status}`;
+                cell.innerHTML = `
+                    <span>${day}</span>
+                    <span class="status-dot"></span>
+                `;
+                grid.appendChild(cell);
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeCalendarModal() {
+            document.getElementById('calendarModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('calendarModal');
+            if (event.target === modal) {
+                closeCalendarModal();
+            }
+        };
+
+        // Initialize Page
+        initAttendanceView();
+    </script>
+</body>
+</html>
