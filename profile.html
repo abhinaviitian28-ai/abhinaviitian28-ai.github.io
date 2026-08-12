@@ -323,54 +323,11 @@
         <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
-    <script>
-        function toggleEditBox() {
-            const box = document.getElementById('editBox');
-            const errorMsg = document.getElementById('errorMsg');
-            
-            if (box.style.display === 'block') {
-                box.style.display = 'none';
-            } else {
-                box.style.display = 'block';
-                document.getElementById('newUsername').value = '';
-                document.getElementById('confirmUsername').value = '';
-                errorMsg.style.display = 'none';
-            }
-        }
-
-        function saveUsername() {
-            const newName = document.getElementById('newUsername').value.trim();
-            const confirmName = document.getElementById('confirmUsername').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
-
-            if (newName === '' || confirmName === '') {
-                errorMsg.innerText = "Fields cannot be empty!";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (newName !== confirmName) {
-                errorMsg.innerText = "Usernames do not match!";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            document.getElementById('displayUsername').innerText = newName;
-            document.getElementById('avatarInitial').innerText = newName.charAt(0).toUpperCase();
-            
-            toggleEditBox();
-        }
-
-        function logout() {
-            window.location.href = "index.html";
-        }
-    </script>
-
- <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // 2. Apki apni Firebase Config Keys
+  // 1. Firebase Configuration Keys
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -381,13 +338,90 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 3. Firebase ko start karna
-  firebase.initializeApp(firebaseConfig);
-  
-  // 4. Database Connection Object (db)
+  // 2. Start Firebase
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const db = firebase.firestore();
 
-  console.log("Firebase Connected Successfully!");
+  // 3. Page open hote hi Firebase se naam automatically fetch hoga
+  window.addEventListener('DOMContentLoaded', () => {
+    loadUsernameFromFirebase();
+  });
+
+  function loadUsernameFromFirebase() {
+    db.collection("users").doc("current_user").get().then((doc) => {
+      if (doc.exists && doc.data().username) {
+        updateUI(doc.data().username);
+      }
+    }).catch((error) => {
+      console.log("Firebase se username lane mein error:", error);
+    });
+  }
+
+  function updateUI(name) {
+    const displayElement = document.getElementById('displayUsername');
+    const avatarElement = document.getElementById('avatarInitial');
+    
+    if (displayElement) displayElement.innerText = name;
+    if (avatarElement) avatarElement.innerText = name.charAt(0).toUpperCase();
+  }
+
+  function toggleEditBox() {
+    const box = document.getElementById('editBox');
+    const errorMsg = document.getElementById('errorMsg');
+    
+    if (box.style.display === 'block') {
+      box.style.display = 'none';
+    } else {
+      box.style.display = 'block';
+      document.getElementById('newUsername').value = '';
+      document.getElementById('confirmUsername').value = '';
+      if (errorMsg) errorMsg.style.display = 'none';
+    }
+  }
+
+  function saveUsername() {
+    const newName = document.getElementById('newUsername').value.trim();
+    const confirmName = document.getElementById('confirmUsername').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (newName === '' || confirmName === '') {
+      if (errorMsg) {
+        errorMsg.innerText = "Fields cannot be empty!";
+        errorMsg.style.display = 'block';
+      }
+      return;
+    }
+
+    if (newName !== confirmName) {
+      if (errorMsg) {
+        errorMsg.innerText = "Usernames do not match!";
+        errorMsg.style.display = 'block';
+      }
+      return;
+    }
+
+    // 🎯 Firebase Database mein username permanently Save karna
+    db.collection("users").doc("current_user").set({
+      username: newName,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      updateUI(newName);
+      toggleEditBox();
+      alert("✅ Username Firebase Database mein successfully save ho gaya!");
+    }).catch((error) => {
+      console.error("Database save error:", error);
+      if (errorMsg) {
+        errorMsg.innerText = "Failed to update database!";
+        errorMsg.style.display = 'block';
+      }
+    });
+  }
+
+  function logout() {
+    window.location.href = "index.html";
+  }
 </script>
 
     
