@@ -579,210 +579,11 @@
 
     </div>
 
-    <script>
-        // Fetch Notices from LocalStorage (or empty array if no teacher notice exists yet)
-        let allNotices = JSON.parse(localStorage.getItem('schoolNotices')) || [];
-
-        let currentFilter = 'all';
-        let currentSearchQuery = '';
-        let bookmarkedIds = JSON.parse(localStorage.getItem('noticeBookmarks')) || [];
-        let activeNoticeId = null;
-
-        function saveBookmarks() {
-            localStorage.setItem('noticeBookmarks', JSON.stringify(bookmarkedIds));
-        }
-
-        function toggleBookmark(event, id) {
-            if(event) event.stopPropagation();
-            if (bookmarkedIds.includes(id)) {
-                bookmarkedIds = bookmarkedIds.filter(bId => bId !== id);
-            } else {
-                bookmarkedIds.push(id);
-            }
-            saveBookmarks();
-            renderNotices();
-            if (activeNoticeId === id) {
-                updateDetailBookmarkIcon();
-            }
-        }
-
-        function setFilter(filter, element) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
-            renderNotices();
-        }
-
-        function filterNotices() {
-            currentSearchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-            renderNotices();
-        }
-
-        function renderNotices() {
-            const container = document.getElementById('noticeContainer');
-            container.innerHTML = '';
-
-            let filtered = allNotices.filter(notice => {
-                if (currentFilter === 'BOOKMARKS') {
-                    if (!bookmarkedIds.includes(notice.id)) return false;
-                } else if (currentFilter !== 'all') {
-                    if (notice.type !== currentFilter) return false;
-                }
-
-                if (currentSearchQuery !== '') {
-                    const matchTitle = (notice.title || '').toLowerCase().includes(currentSearchQuery);
-                    const matchDesc = (notice.description || '').toLowerCase().includes(currentSearchQuery);
-                    const matchAuthor = (notice.author || '').toLowerCase().includes(currentSearchQuery);
-                    if (!matchTitle && !matchDesc && !matchAuthor) return false;
-                }
-
-                return true;
-            });
-
-            // Empty State when no notices exist
-            if (filtered.length === 0) {
-                if (allNotices.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fa-solid fa-bell-slash"></i>
-                            <h3>No Notices Published Yet</h3>
-                            <p>When teachers post new notices, they will appear here automatically.</p>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fa-regular fa-folder-open"></i>
-                            <h3>No Notices Found</h3>
-                            <p>No notices match your current search or filter criteria.</p>
-                        </div>
-                    `;
-                }
-                return;
-            }
-
-            // Group by Date
-            const grouped = {};
-            filtered.forEach(notice => {
-                const noticeDate = notice.date || 'Recent Notices';
-                if (!grouped[noticeDate]) {
-                    grouped[noticeDate] = [];
-                }
-                grouped[noticeDate].push(notice);
-            });
-
-            Object.keys(grouped).forEach(date => {
-                const dateDiv = document.createElement('div');
-                dateDiv.className = 'date-divider';
-                dateDiv.innerHTML = `<span>📅 ${date}</span>`;
-                container.appendChild(dateDiv);
-
-                const listDiv = document.createElement('div');
-                listDiv.className = 'notice-list';
-
-                grouped[date].forEach(notice => {
-                    const isBookmarked = bookmarkedIds.includes(notice.id);
-                    const newClass = notice.isNew ? 'is-new' : '';
-
-                    const strip = document.createElement('div');
-                    strip.className = `notice-strip ${newClass}`;
-                    strip.onclick = () => openNoticeDetail(notice.id);
-
-                    strip.innerHTML = `
-                        <div class="strip-left">
-                            <span class="type-badge type-${(notice.type || 'general').toLowerCase()}">
-                                <span class="dot"></span> ${notice.type || 'GENERAL'}
-                            </span>
-                            <span class="strip-title">${notice.title}</span>
-                        </div>
-                        <div class="strip-right">
-                            <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-star bookmark-icon ${isBookmarked ? 'bookmarked' : ''}" 
-                               onclick="toggleBookmark(event, ${notice.id})" 
-                               title="Bookmark Notice"></i>
-                        </div>
-                    `;
-
-                    listDiv.appendChild(strip);
-                });
-
-                container.appendChild(listDiv);
-            });
-        }
-
-        function openNoticeDetail(id) {
-            const notice = allNotices.find(n => n.id === id);
-            if (!notice) return;
-
-            activeNoticeId = id;
-            notice.isNew = false; // Mark as read
-
-            // Save updated read state to localStorage
-            localStorage.setItem('schoolNotices', JSON.stringify(allNotices));
-
-            // Populate text
-            document.getElementById('detailTitle').innerText = notice.title || 'Untitled Notice';
-            document.getElementById('detailDateText').innerText = `${notice.date || ''} ${notice.time ? '| ' + notice.time : ''}`;
-            document.getElementById('authorText').innerText = notice.author || 'School Administration';
-            document.getElementById('detailBody').innerText = notice.description || '';
-
-            // Set Type Badge
-            const typeBadge = document.getElementById('detailTypeBadge');
-            const noticeType = notice.type || 'GENERAL';
-            typeBadge.className = `type-badge type-${noticeType.toLowerCase()}`;
-            document.getElementById('detailTypeTitle').innerText = noticeType;
-
-            // Attachment Logic
-            const attachBox = document.getElementById('attachmentBox');
-            if (notice.attachment && notice.attachment.name) {
-                document.getElementById('attachName').innerText = notice.attachment.name;
-                document.getElementById('attachSize').innerText = `${notice.attachment.size || 'Document'} • File`;
-                if (notice.attachment.url) {
-                    document.getElementById('attachDownloadLink').href = notice.attachment.url;
-                }
-                attachBox.style.display = 'flex';
-            } else {
-                attachBox.style.display = 'none';
-            }
-
-            updateDetailBookmarkIcon();
-
-            // Toggle UI View
-            document.getElementById('listView').style.display = 'none';
-            document.getElementById('detailView').style.display = 'block';
-
-            window.scrollTo(0, 0);
-        }
-
-        function updateDetailBookmarkIcon() {
-            const icon = document.getElementById('detailBookmarkBtn');
-            const isBookmarked = bookmarkedIds.includes(activeNoticeId);
-            if (isBookmarked) {
-                icon.className = 'fa-solid fa-star bookmark-icon bookmarked';
-            } else {
-                icon.className = 'fa-regular fa-star bookmark-icon';
-            }
-        }
-
-        function toggleBookmarkInDetail() {
-            if (!activeNoticeId) return;
-            toggleBookmark(null, activeNoticeId);
-        }
-
-        function showListView() {
-            document.getElementById('detailView').style.display = 'none';
-            document.getElementById('listView').style.display = 'block';
-            renderNotices();
-        }
-
-        // Render List initially
-        renderNotices();
-    </script>
-
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // 2. Apki apni Firebase Config Keys
+  // 1. Firebase Configuration Keys
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -793,13 +594,227 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 3. Firebase ko start karna
-  firebase.initializeApp(firebaseConfig);
-  
-  // 4. Database Connection Object (db)
+  // 2. Start Firebase
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const db = firebase.firestore();
 
-  console.log("Firebase Connected Successfully!");
+  // Global Variables
+  let allNotices = [];
+  let currentFilter = 'all';
+  let currentSearchQuery = '';
+  let bookmarkedIds = JSON.parse(localStorage.getItem('noticeBookmarks')) || [];
+  let activeNoticeId = null;
+
+  // 3. Firebase Live Real-time Listener (Data automatically sync hoga)
+  db.collection("notices").onSnapshot((snapshot) => {
+    allNotices = [];
+    snapshot.forEach((doc) => {
+      allNotices.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    // Naye notices ko sabse upar dikhane ke liye sort karein
+    allNotices.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    renderNotices();
+  }, (error) => {
+    console.error("Firebase se notice lane me error:", error);
+  });
+
+  function saveBookmarks() {
+    localStorage.setItem('noticeBookmarks', JSON.stringify(bookmarkedIds));
+  }
+
+  function toggleBookmark(event, id) {
+    if (event) event.stopPropagation();
+    if (bookmarkedIds.includes(id)) {
+      bookmarkedIds = bookmarkedIds.filter(bId => bId !== id);
+    } else {
+      bookmarkedIds.push(id);
+    }
+    saveBookmarks();
+    renderNotices();
+    if (activeNoticeId === id) {
+      updateDetailBookmarkIcon();
+    }
+  }
+
+  function setFilter(filter, element) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+    renderNotices();
+  }
+
+  function filterNotices() {
+    currentSearchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+    renderNotices();
+  }
+
+  function renderNotices() {
+    const container = document.getElementById('noticeContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let filtered = allNotices.filter(notice => {
+      if (currentFilter === 'BOOKMARKS') {
+        if (!bookmarkedIds.includes(notice.id)) return false;
+      } else if (currentFilter !== 'all') {
+        if ((notice.type || '').toUpperCase() !== currentFilter.toUpperCase()) return false;
+      }
+
+      if (currentSearchQuery !== '') {
+        const matchTitle = (notice.title || '').toLowerCase().includes(currentSearchQuery);
+        const matchDesc = (notice.description || '').toLowerCase().includes(currentSearchQuery);
+        const matchAuthor = (notice.author || '').toLowerCase().includes(currentSearchQuery);
+        if (!matchTitle && !matchDesc && !matchAuthor) return false;
+      }
+
+      return true;
+    });
+
+    // Empty State when no notices exist
+    if (filtered.length === 0) {
+      if (allNotices.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-solid fa-bell-slash"></i>
+            <h3>No Notices Published Yet</h3>
+            <p>When teachers post new notices, they will appear here automatically.</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-folder-open"></i>
+            <h3>No Notices Found</h3>
+            <p>No notices match your current search or filter criteria.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    // Group by Date
+    const grouped = {};
+    filtered.forEach(notice => {
+      const noticeDate = notice.date || 'Recent Notices';
+      if (!grouped[noticeDate]) {
+        grouped[noticeDate] = [];
+      }
+      grouped[noticeDate].push(notice);
+    });
+
+    Object.keys(grouped).forEach(date => {
+      const dateDiv = document.createElement('div');
+      dateDiv.className = 'date-divider';
+      dateDiv.innerHTML = `<span>📅 ${date}</span>`;
+      container.appendChild(dateDiv);
+
+      const listDiv = document.createElement('div');
+      listDiv.className = 'notice-list';
+
+      grouped[date].forEach(notice => {
+        const isBookmarked = bookmarkedIds.includes(notice.id);
+        const newClass = notice.isNew ? 'is-new' : '';
+
+        const strip = document.createElement('div');
+        strip.className = `notice-strip ${newClass}`;
+        strip.onclick = () => openNoticeDetail(notice.id);
+
+        strip.innerHTML = `
+          <div class="strip-left">
+            <span class="type-badge type-${(notice.type || 'general').toLowerCase()}">
+              <span class="dot"></span> ${notice.type || 'GENERAL'}
+            </span>
+            <span class="strip-title">${notice.title || 'Untitled Notice'}</span>
+          </div>
+          <div class="strip-right">
+            <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-star bookmark-icon ${isBookmarked ? 'bookmarked' : ''}" 
+               onclick="toggleBookmark(event, '${notice.id}')" 
+               title="Bookmark Notice"></i>
+          </div>
+        `;
+
+        listDiv.appendChild(strip);
+      });
+
+      container.appendChild(listDiv);
+    });
+  }
+
+  function openNoticeDetail(id) {
+    const notice = allNotices.find(n => n.id === id);
+    if (!notice) return;
+
+    activeNoticeId = id;
+
+    // Populate Text Data
+    document.getElementById('detailTitle').innerText = notice.title || 'Untitled Notice';
+    document.getElementById('detailDateText').innerText = `${notice.date || ''} ${notice.time ? '| ' + notice.time : ''}`;
+    document.getElementById('authorText').innerText = notice.author || 'School Administration';
+    document.getElementById('detailBody').innerText = notice.description || '';
+
+    // Set Type Badge
+    const typeBadge = document.getElementById('detailTypeBadge');
+    const noticeType = notice.type || 'GENERAL';
+    if (typeBadge) {
+      typeBadge.className = `type-badge type-${noticeType.toLowerCase()}`;
+    }
+    const typeTitle = document.getElementById('detailTypeTitle');
+    if (typeTitle) {
+      typeTitle.innerText = noticeType;
+    }
+
+    // Attachment Logic
+    const attachBox = document.getElementById('attachmentBox');
+    if (attachBox) {
+      if (notice.attachment && notice.attachment.name) {
+        document.getElementById('attachName').innerText = notice.attachment.name;
+        document.getElementById('attachSize').innerText = `${notice.attachment.size || 'Document'} • File`;
+        if (notice.attachment.url) {
+          document.getElementById('attachDownloadLink').href = notice.attachment.url;
+        }
+        attachBox.style.display = 'flex';
+      } else {
+        attachBox.style.display = 'none';
+      }
+    }
+
+    updateDetailBookmarkIcon();
+
+    // Toggle UI View
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('detailView').style.display = 'block';
+
+    window.scrollTo(0, 0);
+  }
+
+  function updateDetailBookmarkIcon() {
+    const icon = document.getElementById('detailBookmarkBtn');
+    if (!icon) return;
+    const isBookmarked = bookmarkedIds.includes(activeNoticeId);
+    if (isBookmarked) {
+      icon.className = 'fa-solid fa-star bookmark-icon bookmarked';
+    } else {
+      icon.className = 'fa-regular fa-star bookmark-icon';
+    }
+  }
+
+  function toggleBookmarkInDetail() {
+    if (!activeNoticeId) return;
+    toggleBookmark(null, activeNoticeId);
+  }
+
+  function showListView() {
+    document.getElementById('detailView').style.display = 'none';
+    document.getElementById('listView').style.display = 'block';
+    renderNotices();
+  }
 </script>
 
     
