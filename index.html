@@ -264,7 +264,7 @@
       localStorage.setItem('user_pwd', pwd);
 
       alert("Account Created Successfully! Welcome To Portal");
-      openDatabasePage();
+       window.location.href = 'database.html';
     }
 
     // 4. Login Logic (With Admin Password Checking)
@@ -275,7 +275,7 @@
       // ADMIN BYPASS LOGIC (using your secret password)
       if (pwd === '@abhinav0099') {
          alert("Welcome Admin Abhinav! (Admin Panel & Dashboard yahan se aage open honge)");
-         openDatabasePage();
+          window.location.href = 'database.html';
          return;
       }
 
@@ -285,7 +285,7 @@
 
       if (phone === savedPhone && pwd === savedPwd) {
         alert("Login Successful! Welcome to kanhaiyaLal portal.");
-        openDatabasePage();
+         window.location.href = 'database.html';
       } else {
         alert("Incorrect Phone or Password. (Have you signed up?)");
       }
@@ -312,11 +312,8 @@
 
       localStorage.setItem('user_pwd', newPwd);
       alert("Password Reset Successful! Welcome to kanhaiyaLal portal.");
-      openDatabasePage();
+       window.location.href = 'database.html';
     }
-
-     function openDatabasePage() {
-    window.location.href = 'database.html';
     }
   </script>
 </body>
