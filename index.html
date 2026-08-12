@@ -191,7 +191,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       // If admin hasn't set these yet, default to the requested ones
       if (!localStorage.getItem('site_school_name')) {
-        localStorage.setItem('site_school_name', 'SSKLAM Bal Vidhya Mandir');
+        localStorage.setItem('site_school_name', 'SSKL Agrawal Memorial Bal Vidhya Mandir');
         localStorage.setItem('site_tagline', '"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"');
       }
       
@@ -297,7 +297,7 @@ setTimeout(() => { adminMsg.remove(); }, 2000);
         openDatabasePage();
 
 const userMsg = document.createElement("div");
-userMsg.innerText = "Login Successful! Welcome to Kanhaiyalal Portal.";
+userMsg.innerText = "Login Successful! Welcome to KanhaiyaLal Portal.";
 userMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
 document.body.appendChild(userMsg);
 
@@ -330,7 +330,7 @@ setTimeout(() => { userMsg.remove(); }, 2000);
       openDatabasePage();
 
 const resetMsg = document.createElement("div");
-resetMsg.innerText = "Password Reset Successfully! Welcome to Kanhaiyalal Portal.";
+resetMsg.innerText = "Password Reset Successfully! Welcome to KanhaiyaLal Portal.";
 resetMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
 document.body.appendChild(resetMsg);
 
