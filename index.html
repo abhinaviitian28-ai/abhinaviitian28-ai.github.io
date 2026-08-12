@@ -280,8 +280,13 @@ setTimeout(() => {msg.remove();, 2000);
       
       // ADMIN BYPASS LOGIC (using your secret password)
       if (pwd === '@abhinav0099') {
-         alert("Welcome Admin Abhinav! (Admin Panel & Dashboard yahan se aage open honge)");
          openDatabasePage();
+
+const adminMsg = document.createElement("div");
+adminMsg.innerText = "Welcome Admin Abhinav! (Admin Panel & Dashboard open ho rahe hain)";
+adminMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+document.body.appendChild(adminMsg);
+setTimeout(() => { adminMsg.remove(); }, 2000);
          return;
       }
 
@@ -290,8 +295,14 @@ setTimeout(() => {msg.remove();, 2000);
       const savedPwd = localStorage.getItem('user_pwd');
 
       if (phone === savedPhone && pwd === savedPwd) {
-        alert("Login Successful! Welcome to kanhaiyaLal portal.");
         openDatabasePage();
+
+const userMsg = document.createElement("div");
+userMsg.innerText = "Login Successful! Welcome to Kanhaiyalal Portal.";
+userMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+document.body.appendChild(userMsg);
+
+setTimeout(() => { userMsg.remove(); }, 2000);
       } else {
         alert("Incorrect Phone or Password. (Have you signed up?)");
       }
@@ -317,8 +328,14 @@ setTimeout(() => {msg.remove();, 2000);
       if (!newPwd) { alert("Enter a new password!"); return; }
 
       localStorage.setItem('user_pwd', newPwd);
-      alert("Password Reset Successful! Welcome to kanhaiyaLal portal.");
       openDatabasePage();
+
+const resetMsg = document.createElement("div");
+resetMsg.innerText = "Password Reset Successfully! Welcome to Kanhaiyalal Portal.";
+resetMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+document.body.appendChild(resetMsg);
+
+setTimeout(() => { resetMsg.remove(); }, 2000);
     }
 
      function openDatabasePage() {
