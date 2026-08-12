@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notice Board - SSKLAM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* Top Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title i {
+            font-size: 22px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .back-dashboard-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-dashboard-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        /* Search Bar */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 16px 12px 42px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* Filter Tabs */
+        .filters-wrapper {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+        .filters-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .filter-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+        }
+
+        .filter-btn.bookmark-btn.active {
+            background: #eab308;
+            color: #0f172a;
+            border-color: #fde047;
+            box-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
+        }
+
+        /* Date Divider */
+        .date-divider {
+            display: flex;
+            align-items: center;
+            margin: 22px 0 12px 0;
+            gap: 12px;
+        }
+
+        .date-divider::before, .date-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .date-divider span {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 4px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Notice List & Strips */
+        .notice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notice-strip {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .notice-strip:hover {
+            transform: translateY(-2px);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Icy Blue Animation for NEW Notices */
+        .notice-strip.is-new {
+            border: 1px solid #38bdf8;
+            animation: icyGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes icyGlow {
+            0% {
+                box-shadow: 0 0 5px rgba(56, 189, 248, 0.3), inset 0 0 5px rgba(56, 189, 248, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 18px rgba(56, 189, 248, 0.7), inset 0 0 10px rgba(56, 189, 248, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(56, 189, 248, 0.3), inset 0 0 5px rgba(56, 189, 248, 0.1);
+            }
+        }
+
+        .strip-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .type-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .type-urgent { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .type-urgent .dot { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+        .type-exam { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .type-exam .dot { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
+
+        .type-holiday { background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+        .type-holiday .dot { background: #eab308; box-shadow: 0 0 6px #eab308; }
+
+        .type-sports { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .type-sports .dot { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+
+        .strip-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .strip-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .bookmark-icon {
+            color: #64748b;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .bookmark-icon:hover {
+            transform: scale(1.2);
+            color: #fde047;
+        }
+
+        .bookmark-icon.bookmarked {
+            color: #eab308;
+        }
+
+        /* --- Full Notice Detail View --- */
+        #detailView {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: rgba(30, 41, 59, 0.8);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #3b82f6;
+        }
+
+        .detail-card {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .detail-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .detail-date {
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        .detail-author {
+            font-size: 12px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .detail-body {
+            font-size: 14px;
+            color: #cbd5e1;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            white-space: pre-line;
+        }
+
+        /* Attachment Section */
+        .attachment-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px dashed rgba(56, 189, 248, 0.4);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .attachment-info i {
+            font-size: 26px;
+            color: #38bdf8;
+            flex-shrink: 0;
+        }
+        
+        .attachment-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .attachment-filename {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attachment-filesize {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .empty-state i {
+            font-size: 42px;
+            margin-bottom: 12px;
+            display: block;
+            color: #38bdf8;
+            opacity: 0.6;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="listView">
+            
+            <div class="page-header">
+                <div class="header-title">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <h1>Notice Board</h1>
+                </div>
+                <a href="dashboard.html" class="back-dashboard-btn">
+                    <i class="fa-solid fa-house"></i> Dashboard
+                </a>
+            </div>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search notices by keyword..." oninput="filterNotices()">
+            </div>
+
+            <div class="filters-wrapper">
+                <button class="filter-btn active" onclick="setFilter('all', this)">All Notices</button>
+                <button class="filter-btn" onclick="setFilter('URGENT', this)">🔴 Urgent</button>
+                <button class="filter-btn" onclick="setFilter('EXAM', this)">🔵 Exam</button>
+                <button class="filter-btn" onclick="setFilter('HOLIDAY', this)">🟡 Holiday</button>
+                <button class="filter-btn" onclick="setFilter('SPORTS', this)">🟢 Sports</button>
+                <button class="filter-btn bookmark-btn" onclick="setFilter('BOOKMARKS', this)">⭐ Bookmarks</button>
+            </div>
+
+            <div id="noticeContainer"></div>
+
+        </div>
+
+        <div id="detailView">
+            
+            <div class="detail-top-bar">
+                <button class="back-btn" onclick="showListView()">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Notice Board
+                </button>
+                <i id="detailBookmarkBtn" class="fa-star bookmark-icon" style="font-size: 22px;" onclick="toggleBookmarkInDetail()"></i>
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-meta">
+                    <div id="detailTypeBadge" class="type-badge">
+                        <span class="dot"></span> <span id="detailTypeTitle">TYPE</span>
+                    </div>
+                    <div class="detail-date" id="detailDate">
+                        <i class="fa-regular fa-calendar"></i> <span id="detailDateText">--</span>
+                    </div>
+                </div>
+
+                <h1 class="detail-title" id="detailTitle">--</h1>
+
+                <div class="detail-author" id="detailAuthor">
+                    <i class="fa-solid fa-user-tie"></i> <span id="authorText">--</span>
+                </div>
+
+                <div class="detail-body" id="detailBody"></div>
+
+                <div class="attachment-box" id="attachmentBox" style="display: none;">
+                    <div class="attachment-info">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <div class="attachment-text">
+                            <div class="attachment-filename" id="attachName">Document.pdf</div>
+                            <div class="attachment-filesize" id="attachSize">-- • PDF Document</div>
+                        </div>
+                    </div>
+                    <a href="#" id="attachDownloadLink" class="download-btn" download>
+                        <i class="fa-solid fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Fetch Notices from LocalStorage (or empty array if no teacher notice exists yet)
+        let allNotices = JSON.parse(localStorage.getItem('schoolNotices')) || [];
+
+        let currentFilter = 'all';
+        let currentSearchQuery = '';
+        let bookmarkedIds = JSON.parse(localStorage.getItem('noticeBookmarks')) || [];
+        let activeNoticeId = null;
+
+        function saveBookmarks() {
+            localStorage.setItem('noticeBookmarks', JSON.stringify(bookmarkedIds));
+        }
+
+        function toggleBookmark(event, id) {
+            if(event) event.stopPropagation();
+            if (bookmarkedIds.includes(id)) {
+                bookmarkedIds = bookmarkedIds.filter(bId => bId !== id);
+            } else {
+                bookmarkedIds.push(id);
+            }
+            saveBookmarks();
+            renderNotices();
+            if (activeNoticeId === id) {
+                updateDetailBookmarkIcon();
+            }
+        }
+
+        function setFilter(filter, element) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            renderNotices();
+        }
+
+        function filterNotices() {
+            currentSearchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderNotices();
+        }
+
+        function renderNotices() {
+            const container = document.getElementById('noticeContainer');
+            container.innerHTML = '';
+
+            let filtered = allNotices.filter(notice => {
+                if (currentFilter === 'BOOKMARKS') {
+                    if (!bookmarkedIds.includes(notice.id)) return false;
+                } else if (currentFilter !== 'all') {
+                    if (notice.type !== currentFilter) return false;
+                }
+
+                if (currentSearchQuery !== '') {
+                    const matchTitle = (notice.title || '').toLowerCase().includes(currentSearchQuery);
+                    const matchDesc = (notice.description || '').toLowerCase().includes(currentSearchQuery);
+                    const matchAuthor = (notice.author || '').toLowerCase().includes(currentSearchQuery);
+                    if (!matchTitle && !matchDesc && !matchAuthor) return false;
+                }
+
+                return true;
+            });
+
+            // Empty State when no notices exist
+            if (filtered.length === 0) {
+                if (allNotices.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            <h3>No Notices Published Yet</h3>
+                            <p>When teachers post new notices, they will appear here automatically.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <h3>No Notices Found</h3>
+                            <p>No notices match your current search or filter criteria.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            // Group by Date
+            const grouped = {};
+            filtered.forEach(notice => {
+                const noticeDate = notice.date || 'Recent Notices';
+                if (!grouped[noticeDate]) {
+                    grouped[noticeDate] = [];
+                }
+                grouped[noticeDate].push(notice);
+            });
+
+            Object.keys(grouped).forEach(date => {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'date-divider';
+                dateDiv.innerHTML = `<span>📅 ${date}</span>`;
+                container.appendChild(dateDiv);
+
+                const listDiv = document.createElement('div');
+                listDiv.className = 'notice-list';
+
+                grouped[date].forEach(notice => {
+                    const isBookmarked = bookmarkedIds.includes(notice.id);
+                    const newClass = notice.isNew ? 'is-new' : '';
+
+                    const strip = document.createElement('div');
+                    strip.className = `notice-strip ${newClass}`;
+                    strip.onclick = () => openNoticeDetail(notice.id);
+
+                    strip.innerHTML = `
+                        <div class="strip-left">
+                            <span class="type-badge type-${(notice.type || 'general').toLowerCase()}">
+                                <span class="dot"></span> ${notice.type || 'GENERAL'}
+                            </span>
+                            <span class="strip-title">${notice.title}</span>
+                        </div>
+                        <div class="strip-right">
+                            <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-star bookmark-icon ${isBookmarked ? 'bookmarked' : ''}" 
+                               onclick="toggleBookmark(event, ${notice.id})" 
+                               title="Bookmark Notice"></i>
+                        </div>
+                    `;
+
+                    listDiv.appendChild(strip);
+                });
+
+                container.appendChild(listDiv);
+            });
+        }
+
+        function openNoticeDetail(id) {
+            const notice = allNotices.find(n => n.id === id);
+            if (!notice) return;
+
+            activeNoticeId = id;
+            notice.isNew = false; // Mark as read
+
+            // Save updated read state to localStorage
+            localStorage.setItem('schoolNotices', JSON.stringify(allNotices));
+
+            // Populate text
+            document.getElementById('detailTitle').innerText = notice.title || 'Untitled Notice';
+            document.getElementById('detailDateText').innerText = `${notice.date || ''} ${notice.time ? '| ' + notice.time : ''}`;
+            document.getElementById('authorText').innerText = notice.author || 'School Administration';
+            document.getElementById('detailBody').innerText = notice.description || '';
+
+            // Set Type Badge
+            const typeBadge = document.getElementById('detailTypeBadge');
+            const noticeType = notice.type || 'GENERAL';
+            typeBadge.className = `type-badge type-${noticeType.toLowerCase()}`;
+            document.getElementById('detailTypeTitle').innerText = noticeType;
+
+            // Attachment Logic
+            const attachBox = document.getElementById('attachmentBox');
+            if (notice.attachment && notice.attachment.name) {
+                document.getElementById('attachName').innerText = notice.attachment.name;
+                document.getElementById('attachSize').innerText = `${notice.attachment.size || 'Document'} • File`;
+                if (notice.attachment.url) {
+                    document.getElementById('attachDownloadLink').href = notice.attachment.url;
+                }
+                attachBox.style.display = 'flex';
+            } else {
+                attachBox.style.display = 'none';
+            }
+
+            updateDetailBookmarkIcon();
+
+            // Toggle UI View
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('detailView').style.display = 'block';
+
+            window.scrollTo(0, 0);
+        }
+
+        function updateDetailBookmarkIcon() {
+            const icon = document.getElementById('detailBookmarkBtn');
+            const isBookmarked = bookmarkedIds.includes(activeNoticeId);
+            if (isBookmarked) {
+                icon.className = 'fa-solid fa-star bookmark-icon bookmarked';
+            } else {
+                icon.className = 'fa-regular fa-star bookmark-icon';
+            }
+        }
+
+        function toggleBookmarkInDetail() {
+            if (!activeNoticeId) return;
+            toggleBookmark(null, activeNoticeId);
+        }
+
+        function showListView() {
+            document.getElementById('detailView').style.display = 'none';
+            document.getElementById('listView').style.display = 'block';
+            renderNotices();
+        }
+
+        // Render List initially
+        renderNotices();
+    </script>
+</body>
+</html>
