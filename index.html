@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanhaiya Lal Agrawal - Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Reset & Base Styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #701a75 70%, #881337 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; color: #ffffff; overflow-x: hidden; }
+
+    /* Background Orbs */
+    .bg-circle { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 1; opacity: 0.6; animation: float 8s infinite alternate ease-in-out; }
+    .circle-1 { width: 300px; height: 300px; background: #2563eb; top: 10%; left: 10%; }
+    .circle-2 { width: 350px; height: 350px; background: #e11d48; bottom: 10%; right: 10%; animation-delay: -4s; }
+    @keyframes float { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-30px) scale(1.1); } }
+
+    /* Container Box */
+    .portal-container { position: relative; z-index: 10; width: 90%; max-width: 450px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4); transition: all 0.5s ease; }
+    
+    /* Entry Page Specific */
+    .logo-box { width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #2563eb, #e11d48); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(225, 29, 72, 0.4); animation: pulse 3s infinite; }
+    .logo-box i { font-size: 36px; color: #ffffff; }
+    @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(225, 29, 72, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
+    
+    .school-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(to right, #ffffff, #f3d5d8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; line-height: 1.3; }
+    .tagline { font-size: 13px; color: #cbd5e1; margin-bottom: 30px; font-style: italic; }
+    
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 30px; }
+    .feature-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 12px 8px; }
+    .feature-card i { font-size: 20px; margin-bottom: 6px; color: #38bdf8; }
+    .feature-card:nth-child(2) i { color: #fbbf24; }
+    .feature-card:nth-child(3) i { color: #f43f5e; }
+    .feature-card p { font-size: 11px; color: #e2e8f0; }
+
+    /* Button Styles */
+    .btn-main { width: 100%; padding: 14px 24px; border: none; border-radius: 50px; background: linear-gradient(90deg, #2563eb, #e11d48); color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(225, 29, 72, 0.5); }
+    .btn-alt { background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: none; margin-top: 10px; }
+    .btn-alt:hover { background: rgba(255, 255, 255, 0.1); }
+
+    /* Auth Sections (Login/Signup) Styles */
+    .auth-header { margin-bottom: 25px; }
+    .auth-header h2 { font-size: 22px; margin-bottom: 5px; }
+    .auth-header p { font-size: 13px; color: #cbd5e1; }
+    
+    .input-group { position: relative; margin-bottom: 15px; text-align: left; }
+    .input-group i.icon-left { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; }
+    .input-group input { width: 100%; padding: 14px 15px 14px 45px; border-radius: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); color: white; font-size: 14px; outline: none; transition: 0.3s; }
+    .input-group input:focus { border-color: #38bdf8; background: rgba(0, 0, 0, 0.4); }
+    .input-group i.eye-btn { position: absolute; right: 16px; left: auto; top: 50%; transform: translateY(-50%); cursor: pointer; color: #cbd5e1; font-size: 14px; }
+    .input-group i.eye-btn:hover { color: #ffffff; }
+
+    .toggle-links { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; padding: 0 5px; }
+    .toggle-links a { color: #38bdf8; text-decoration: none; cursor: pointer; transition: 0.2s; }
+    .toggle-links a:hover { color: #ffffff; text-decoration: underline; }
+
+    /* Hidden Sections Default */
+    #auth-block, #signup-section, #forgot-section, #otp-section, #forgot-otp-section { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-circle circle-1"></div>
+  <div class="bg-circle circle-2"></div>
+
+  <div class="portal-container" id="entry-block">
+    <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+    <h1 class="school-name" id="display-school-name">SSKLAM Bal Vidhya Mandir</h1>
+    <p class="tagline" id="display-tagline">"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"</p>
+    
+    <div class="features-grid">
+      <div class="feature-card"><i class="fa-solid fa-laptop-code"></i><p>Smart Class</p></div>
+      <div class="feature-card"><i class="fa-solid fa-flask"></i><p>Science Labs</p></div>
+      <div class="feature-card"><i class="fa-solid fa-bus"></i><p>Transport</p></div>
+    </div>
+    
+    <button class="btn-main" onclick="goToAuth()">
+      <span>ENTER PORTAL</span>
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+
+
+  <div class="portal-container" id="auth-block">
+    
+    <div id="login-section">
+      <div class="logo-box" style="width:60px; height:60px; margin-bottom:15px;"><i class="fa-solid fa-user-lock" style="font-size:24px;"></i></div>
+      <div class="auth-header">
+        <h2>Welcome Back!</h2>
+        <p>Login to Kanhaiya Lal Agrawal Campus Dashboard</p>
+      </div>
+
+      <div class="input-group">
+        <i class="fa-solid fa-phone icon-left"></i>
+        <input type="text" id="login-phone" placeholder="Phone Number / Username">
+      </div>
+      <div class="input-group">
+        <i class="fa-solid fa-lock icon-left"></i>
+        <input type="password" id="login-pwd" placeholder="Password">
+        <i class="fa-solid fa-eye eye-btn" id="login-eye" onclick="togglePassword('login-pwd', 'login-eye')"></i>
+      </div>
+      
+      <div class="toggle-links">
+        <label style="cursor:pointer;"><input type="checkbox"> Remember me</label>
+        <a onclick="switchSection('forgot-section')">Forgot Password?</a>
+      </div>
+
+      <button class="btn-main" onclick="handleLogin()">LOG IN</button>
+      <button class="btn-main btn-alt" onclick="switchSection('signup-section')">Create New Account</button>
+    </div>
+
+
+    <div id="signup-section">
+      <div class="auth-header">
+        <h2>Create Account</h2>
+        <p>Join Kanhaiya Lal Agrawal Digital Campus</p>
+      </div>
+
+      <div id="signup-step-1">
+        <div class="input-group">
+          <i class="fa-solid fa-user icon-left"></i>
+          <input type="text" id="reg-username" placeholder="Full Name (Username)">
+        </div>
+        <div class="input-group">
+          <i class="fa-solid fa-phone icon-left"></i>
+          <input type="tel" id="reg-phone" placeholder="Phone Number">
+        </div>
+        <div class="input-group">
+          <i class="fa-solid fa-lock icon-left"></i>
+          <input type="password" id="reg-pwd" placeholder="Create Password">
+          <i class="fa-solid fa-eye eye-btn" id="reg-eye" onclick="togglePassword('reg-pwd', 'reg-eye')"></i>
+        </div>
+        
+        <button class="btn-main" onclick="sendSignupOTP()">Next: Verify Phone <i class="fa-solid fa-comment-sms"></i></button>
+        <div class="toggle-links" style="justify-content: center; margin-top:20px;">
+          <span>Already have an account? <a onclick="switchSection('login-section')">Log in</a></span>
+        </div>
+      </div>
+
+      <div id="otp-section">
+        <p style="font-size:13px; color:#38bdf8; margin-bottom:15px;">An OTP has been sent to your phone.</p>
+        <div class="input-group">
+          <i class="fa-solid fa-key icon-left"></i>
+          <input type="number" id="reg-otp" placeholder="Enter 4-digit OTP">
+        </div>
+        <button class="btn-main" onclick="verifyAndCreate()">Verify & Create Account</button>
+        <button class="btn-main btn-alt" onclick="cancelOTP('signup-step-1', 'otp-section')">Back</button>
+      </div>
+    </div>
+
+
+    <div id="forgot-section">
+      <div class="auth-header">
+        <h2>Reset Password</h2>
+        <p>Enter your phone number to get OTP</p>
+      </div>
+
+      <div id="forgot-step-1">
+        <div class="input-group">
+          <i class="fa-solid fa-phone icon-left"></i>
+          <input type="tel" id="reset-phone" placeholder="Registered Phone Number">
+        </div>
+        <button class="btn-main" onclick="sendForgotOTP()">Send OTP <i class="fa-solid fa-paper-plane"></i></button>
+        <button class="btn-main btn-alt" onclick="switchSection('login-section')">Cancel</button>
+      </div>
+
+      <div id="forgot-otp-section">
+        <p style="font-size:13px; color:#38bdf8; margin-bottom:15px;">OTP sent! Enter it below with new password.</p>
+        <div class="input-group">
+          <i class="fa-solid fa-key icon-left"></i>
+          <input type="number" id="reset-otp" placeholder="Enter 4-digit OTP">
+        </div>
+        <div class="input-group">
+          <i class="fa-solid fa-lock icon-left"></i>
+          <input type="password" id="new-pwd" placeholder="New Password">
+          <i class="fa-solid fa-eye eye-btn" id="new-eye" onclick="togglePassword('new-pwd', 'new-eye')"></i>
+        </div>
+        <div class="input-group">
+          <i class="fa-solid fa-check-circle icon-left"></i>
+          <input type="password" id="confirm-pwd" placeholder="Confirm Password">
+        </div>
+        <button class="btn-main" onclick="resetPassword()">Confirm Reset</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // System Default Logic - Setting initial defaults for LocalStorage
+    document.addEventListener("DOMContentLoaded", function() {
+      // If admin hasn't set these yet, default to the requested ones
+      if (!localStorage.getItem('site_school_name')) {
+        localStorage.setItem('site_school_name', 'SSKLAM Bal Vidhya Mandir');
+        localStorage.setItem('site_tagline', '"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"');
+      }
+      
+      // Setup display
+      document.getElementById('display-school-name').textContent = localStorage.getItem('site_school_name');
+      document.getElementById('display-tagline').textContent = localStorage.getItem('site_tagline');
+    });
+
+    // 1. Navigation & Transitions
+    function goToAuth() {
+      document.getElementById('entry-block').style.display = 'none';
+      document.getElementById('auth-block').style.display = 'block';
+    }
+
+    function switchSection(sectionId) {
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('signup-section').style.display = 'none';
+      document.getElementById('forgot-section').style.display = 'none';
+      
+      document.getElementById('signup-step-1').style.display = 'block';
+      document.getElementById('otp-section').style.display = 'none';
+      document.getElementById('forgot-step-1').style.display = 'block';
+      document.getElementById('forgot-otp-section').style.display = 'none';
+
+      document.getElementById(sectionId).style.display = 'block';
+    }
+
+    // 2. Eye Icon (Hide/Show Password)
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    // 3. Signup & OTP Simulation
+    function sendSignupOTP() {
+      const user = document.getElementById('reg-username').value;
+      const phone = document.getElementById('reg-phone').value;
+      const pwd = document.getElementById('reg-pwd').value;
+
+      if (!user || !phone || !pwd) { alert("Please fill all details first!"); return; }
+      
+      alert("System Message: Your Verification OTP is 1234");
+      document.getElementById('signup-step-1').style.display = 'none';
+      document.getElementById('otp-section').style.display = 'block';
+    }
+
+    function cancelOTP(step1, step2) {
+      document.getElementById(step1).style.display = 'block';
+      document.getElementById(step2).style.display = 'none';
+    }
+
+    function verifyAndCreate() {
+      const otp = document.getElementById('reg-otp').value;
+      if (otp !== '1234') { alert("Invalid OTP! (Try 1234)"); return; }
+
+      const phone = document.getElementById('reg-phone').value;
+      const pwd = document.getElementById('reg-pwd').value;
+      localStorage.setItem('user_phone', phone);
+      localStorage.setItem('user_pwd', pwd);
+
+      alert("Account Created Successfully! Welcome To Portal");
+      openDatabasePage();
+    }
+
+    // 4. Login Logic (With Admin Password Checking)
+    function handleLogin() {
+      const phone = document.getElementById('login-phone').value;
+      const pwd = document.getElementById('login-pwd').value;
+      
+      // ADMIN BYPASS LOGIC (using your secret password)
+      if (pwd === '@abhinav0099') {
+         alert("Welcome Admin Abhinav! (Admin Panel & Dashboard yahan se aage open honge)");
+         openDatabasePage();
+         return;
+      }
+
+      // NORMAL USER LOGIC
+      const savedPhone = localStorage.getItem('user_phone');
+      const savedPwd = localStorage.getItem('user_pwd');
+
+      if (phone === savedPhone && pwd === savedPwd) {
+        alert("Login Successful! Welcome to kanhaiyaLal portal.");
+        openDatabasePage();
+      } else {
+        alert("Incorrect Phone or Password. (Have you signed up?)");
+      }
+    }
+
+    // 5. Forgot Password Logic
+    function sendForgotOTP() {
+      const phone = document.getElementById('reset-phone').value;
+      if (!phone) { alert("Enter phone number first!"); return; }
+      
+      alert("System Message: Your Password Reset OTP is 1234");
+      document.getElementById('forgot-step-1').style.display = 'none';
+      document.getElementById('forgot-otp-section').style.display = 'block';
+    }
+
+    function resetPassword() {
+      const otp = document.getElementById('reset-otp').value;
+      const newPwd = document.getElementById('new-pwd').value;
+      const confirmPwd = document.getElementById('confirm-pwd').value;
+
+      if (otp !== '1234') { alert("Invalid OTP!"); return; }
+      if (newPwd !== confirmPwd) { alert("Passwords do not match!"); return; }
+      if (!newPwd) { alert("Enter a new password!"); return; }
+
+      localStorage.setItem('user_pwd', newPwd);
+      alert("Password Reset Successful! Welcome to kanhaiyaLal portal.");
+      openDatabasePage();
+    }
+
+     function openDatabasePage() {
+    window.location.href = '2database.html';
+    }
+  </script>
+</body>
+</html>
