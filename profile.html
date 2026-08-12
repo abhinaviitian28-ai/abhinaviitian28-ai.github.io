@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5; 
+            color: #333;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Premium Header */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            font-size: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .profile-header-section {
+            background: #0056b3;
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar {
+            width: 75px;
+            height: 75px;
+            background: #ffffff;
+            color: #0056b3;
+            font-size: 32px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px; 
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-info h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        /* Edit Username Button */
+        .edit-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        .edit-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Hidden Edit Box */
+        .edit-username-box {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .edit-username-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .edit-username-box input:focus {
+            border-color: #2563eb;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-save {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+        }
+        
+        .btn-cancel {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .error-msg {
+            color: #dc2626;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: none;
+            font-weight: 600;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .detail-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #0056b3;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        /* Secured Phone */
+        .phone-protected {
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
+            background: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: #334155;
+            font-family: monospace;
+            font-size: 15px;
+            display: inline-block;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            width: 100%;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .logout-btn:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">🎓</div>
+            <h1>Student Portal</h1>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-header-section">
+                <div class="avatar" id="avatarInitial">R</div>
+                <div class="user-info">
+                    <h2 id="displayUsername">Rahul Sharma</h2>
+                    <button class="edit-btn" onclick="toggleEditBox()">✏️ Edit Username</button>
+                </div>
+            </div>
+
+            <div class="edit-username-box" id="editBox">
+                <div id="errorMsg" class="error-msg">Usernames do not match!</div>
+                <input type="text" id="newUsername" placeholder="Enter New Username">
+                <input type="text" id="confirmUsername" placeholder="Confirm Username">
+                <div class="action-btns">
+                    <button class="btn-cancel" onclick="toggleEditBox()">Cancel</button>
+                    <button class="btn-save" onclick="saveUsername()">Save</button>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Roll Number</div>
+                    <div class="detail-value">1024</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Gender</div>
+                    <div class="detail-value">Male</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value">
+                        <span class="phone-protected">+91 9876543210</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Class & Section</div>
+                    <div class="detail-value">10th - A</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Stream</div>
+                    <div class="detail-value">Science</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        function toggleEditBox() {
+            const box = document.getElementById('editBox');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+                document.getElementById('newUsername').value = '';
+                document.getElementById('confirmUsername').value = '';
+                errorMsg.style.display = 'none';
+            }
+        }
+
+        function saveUsername() {
+            const newName = document.getElementById('newUsername').value.trim();
+            const confirmName = document.getElementById('confirmUsername').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (newName === '' || confirmName === '') {
+                errorMsg.innerText = "Fields cannot be empty!";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (newName !== confirmName) {
+                errorMsg.innerText = "Usernames do not match!";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            document.getElementById('displayUsername').innerText = newName;
+            document.getElementById('avatarInitial').innerText = newName.charAt(0).toUpperCase();
+            
+            toggleEditBox();
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
