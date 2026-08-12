@@ -263,9 +263,9 @@
 
     <div class="container">
         <a href="database.html" class="back-btn">
-    <svg xmlns="http://w3.org" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-    <span>Back to Dashboard</span>
-</a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>Back to Dashboard</span>
+        </a>
         <div class="header">
             <div class="header-icon">🎓</div>
             <h1>Student Portal</h1>
@@ -273,9 +273,9 @@
 
         <div class="profile-card">
             <div class="profile-header-section">
-                <div class="avatar" id="avatarInitial">R</div>
+                <div class="avatar" id="avatarInitial">U</div>
                 <div class="user-info">
-                    <h2 id="displayUsername">Rahul Sharma</h2>
+                    <h2 id="displayUsername">Loading...</h2>
                     <button class="edit-btn" onclick="toggleEditBox()">✏️ Edit Username</button>
                 </div>
             </div>
@@ -304,7 +304,7 @@
                 <div class="detail-item">
                     <div class="detail-label">Phone Number</div>
                     <div class="detail-value">
-                        <span class="phone-protected">+91 9876543210</span>
+                        <span class="phone-protected" id="displayPhone">Loading...</span>
                     </div>
                 </div>
 
@@ -324,106 +324,133 @@
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<script>
-  // 1. Firebase Configuration Keys
-  const firebaseConfig = {
-    apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
-    authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
-    projectId: "ss-kanhaiyalal-agrawal",
-    storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
-    messagingSenderId: "776171239833",
-    appId: "1:776171239833:web:39eea44420db97384b3b08",
-    measurementId: "G-TQKTRTKBEJ"
-  };
+    <script>
+      // 1. Firebase Configuration Keys
+      const firebaseConfig = {
+        apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+        authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+        projectId: "ss-kanhaiyalal-agrawal",
+        storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+        messagingSenderId: "776171239833",
+        appId: "1:776171239833:web:39eea44420db97384b3b08",
+        measurementId: "G-TQKTRTKBEJ"
+      };
 
-  // 2. Start Firebase
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  const db = firebase.firestore();
-
-  // 3. Page open hote hi Firebase se naam automatically fetch hoga
-  window.addEventListener('DOMContentLoaded', () => {
-    loadUsernameFromFirebase();
-  });
-
-  function loadUsernameFromFirebase() {
-    db.collection("users").doc("current_user").get().then((doc) => {
-      if (doc.exists && doc.data().username) {
-        updateUI(doc.data().username);
+      // 2. Start Firebase
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
       }
-    }).catch((error) => {
-      console.log("Firebase se username lane mein error:", error);
-    });
-  }
+      const db = firebase.firestore();
 
-  function updateUI(name) {
-    const displayElement = document.getElementById('displayUsername');
-    const avatarElement = document.getElementById('avatarInitial');
-    
-    if (displayElement) displayElement.innerText = name;
-    if (avatarElement) avatarElement.innerText = name.charAt(0).toUpperCase();
-  }
+      // Logged in user ka phone number browser memory se nikalna
+      const loggedInPhone = localStorage.getItem('user_phone');
 
-  function toggleEditBox() {
-    const box = document.getElementById('editBox');
-    const errorMsg = document.getElementById('errorMsg');
-    
-    if (box.style.display === 'block') {
-      box.style.display = 'none';
-    } else {
-      box.style.display = 'block';
-      document.getElementById('newUsername').value = '';
-      document.getElementById('confirmUsername').value = '';
-      if (errorMsg) errorMsg.style.display = 'none';
-    }
-  }
+      // 3. Page open hote hi Firebase se Login User ka Data Fetch karna
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!loggedInPhone) {
+          alert("Please login first!");
+          window.location.href = "index.html";
+          return;
+        }
+        loadUserProfileFromFirebase();
+      });
 
-  function saveUsername() {
-    const newName = document.getElementById('newUsername').value.trim();
-    const confirmName = document.getElementById('confirmUsername').value.trim();
-    const errorMsg = document.getElementById('errorMsg');
+      function loadUserProfileFromFirebase() {
+        db.collection("users").doc(loggedInPhone).get().then((doc) => {
+          if (doc.exists) {
+            const userData = doc.data();
+            const username = userData.username || 'Student';
+            const phone = userData.phone || loggedInPhone;
 
-    if (newName === '' || confirmName === '') {
-      if (errorMsg) {
-        errorMsg.innerText = "Fields cannot be empty!";
-        errorMsg.style.display = 'block';
+            updateUI(username, phone);
+          } else {
+            console.log("No user record found in Firebase for phone:", loggedInPhone);
+            updateUI("User", loggedInPhone);
+          }
+        }).catch((error) => {
+          console.error("Firebase profile fetch error:", error);
+          updateUI("User", loggedInPhone);
+        });
       }
-      return;
-    }
 
-    if (newName !== confirmName) {
-      if (errorMsg) {
-        errorMsg.innerText = "Usernames do not match!";
-        errorMsg.style.display = 'block';
+      function updateUI(name, phone) {
+        const displayElement = document.getElementById('displayUsername');
+        const avatarElement = document.getElementById('avatarInitial');
+        const phoneElement = document.getElementById('displayPhone');
+        
+        if (displayElement) displayElement.innerText = name;
+        if (avatarElement) avatarElement.innerText = name.charAt(0).toUpperCase();
+        if (phoneElement) phoneElement.innerText = phone;
+
+        localStorage.setItem('loggedInUser', name);
       }
-      return;
-    }
 
-    // 🎯 Firebase Database mein username permanently Save karna
-    db.collection("users").doc("current_user").set({
-      username: newName,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      updateUI(newName);
-      toggleEditBox();
-      alert("✅ Username Firebase Database mein successfully save ho gaya!");
-    }).catch((error) => {
-      console.error("Database save error:", error);
-      if (errorMsg) {
-        errorMsg.innerText = "Failed to update database!";
-        errorMsg.style.display = 'block';
+      function toggleEditBox() {
+        const box = document.getElementById('editBox');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        if (box.style.display === 'block') {
+          box.style.display = 'none';
+        } else {
+          box.style.display = 'block';
+          document.getElementById('newUsername').value = '';
+          document.getElementById('confirmUsername').value = '';
+          if (errorMsg) errorMsg.style.display = 'none';
+        }
       }
-    });
-  }
 
-  function logout() {
-    window.location.href = "index.html";
-  }
-</script>
+      function saveUsername() {
+        const newName = document.getElementById('newUsername').value.trim();
+        const confirmName = document.getElementById('confirmUsername').value.trim();
+        const errorMsg = document.getElementById('errorMsg');
 
+        if (newName === '' || confirmName === '') {
+          if (errorMsg) {
+            errorMsg.innerText = "Fields cannot be empty!";
+            errorMsg.style.display = 'block';
+          }
+          return;
+        }
+
+        if (newName !== confirmName) {
+          if (errorMsg) {
+            errorMsg.innerText = "Usernames do not match!";
+            errorMsg.style.display = 'block';
+          }
+          return;
+        }
+
+        if (!loggedInPhone) {
+          alert("User not logged in!");
+          return;
+        }
+
+        // 🎯 Logged in phone number ke account me username update karna
+        db.collection("users").doc(loggedInPhone).update({
+          username: newName,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+          updateUI(newName, loggedInPhone);
+          toggleEditBox();
+          alert("✅ Username Firebase Database mein successfully update ho gaya!");
+        }).catch((error) => {
+          console.error("Database save error:", error);
+          if (errorMsg) {
+            errorMsg.innerText = "Failed to update database!";
+            errorMsg.style.display = 'block';
+          }
+        });
+      }
+
+      function logout() {
+        localStorage.removeItem('user_phone');
+        localStorage.removeItem('loggedInUser');
+        window.location.href = "index.html";
+      }
+    </script>
     
 </body>
+
 </html>
