@@ -263,8 +263,14 @@
       localStorage.setItem('user_phone', phone);
       localStorage.setItem('user_pwd', pwd);
 
-      alert("Account Created Successfully! Welcome To Portal");
       openDatabasePage();
+
+const msg = document.createElement("div");
+msg.innerText = "Account Created Successfully! Welcome To Portal";
+msg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+sessionStorage.setItem("showToast", "true");
+setTimeout(() => {msg.remove();, 2000);
+
     }
 
     // 4. Login Logic (With Admin Password Checking)
