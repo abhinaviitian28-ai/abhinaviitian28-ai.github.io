@@ -298,40 +298,11 @@
 
   </div>
 
-  <script>
-    let previousScrollPosition = 0;
-
-    document.addEventListener("DOMContentLoaded", function() {
-      const savedPhone = localStorage.getItem('user_phone');
-      if(savedPhone) {
-        document.getElementById('welcome-text').textContent = "Hello, Abhinav!";
-      }
-    });
-
-    function openSection(title, iconClass, description) {
-      previousScrollPosition = window.scrollY || document.documentElement.scrollTop;
-      document.getElementById('main-dashboard').style.display = 'none';
-      
-      document.getElementById('section-title').innerHTML = `<i class="fa-solid ${iconClass}"></i> ${title}`;
-      document.getElementById('content-heading').textContent = `Welcome to ${title}`;
-      document.getElementById('content-desc').textContent = description;
-
-      document.getElementById('inner-section').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    }
-
-    function closeSection() {
-      document.getElementById('inner-section').style.display = 'none';
-      document.getElementById('main-dashboard').style.display = 'grid';
-      window.scrollTo({ top: previousScrollPosition, behavior: 'instant' });
-    }
-  </script>
-
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // 2. Apki apni Firebase Config Keys
+  // 1. Firebase Configuration Keys
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -342,13 +313,82 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 3. Firebase ko start karna
-  firebase.initializeApp(firebaseConfig);
-  
-  // 4. Database Connection Object (db)
+  // 2. Start Firebase
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const db = firebase.firestore();
 
-  console.log("Firebase Connected Successfully!");
+  let previousScrollPosition = 0;
+
+  // 3. Page open hote hi Firebase se dynamic Username fetch karna
+  document.addEventListener("DOMContentLoaded", function() {
+    loadUserGreeting();
+  });
+
+  function loadUserGreeting() {
+    const savedPhone = localStorage.getItem('user_phone');
+    const loggedInUser = localStorage.getItem('loggedInUser');
+    const welcomeElem = document.getElementById('welcome-text');
+
+    if (!welcomeElem) return;
+
+    // Fast Load: Agar browser memory me naam hai to dikha do
+    if (loggedInUser) {
+      welcomeElem.textContent = `Hello, ${loggedInUser}!`;
+    }
+
+    // Live Fetch: Firebase Firestore Database se bilkul naya naam lekar aao
+    if (savedPhone) {
+      db.collection("users").doc(savedPhone).get().then((doc) => {
+        if (doc.exists && doc.data().username) {
+          const name = doc.data().username;
+          welcomeElem.textContent = `Hello, ${name}!`;
+          localStorage.setItem('loggedInUser', name);
+        }
+      }).catch((err) => {
+        console.log("Firebase greeting fetch error:", err);
+      });
+    } else {
+      // Fallback Document
+      db.collection("users").doc("current_user").get().then((doc) => {
+        if (doc.exists && doc.data().username) {
+          welcomeElem.textContent = `Hello, ${doc.data().username}!`;
+        }
+      });
+    }
+  }
+
+  // 4. Section Toggle Logic (Dashboard Navigation)
+  function openSection(title, iconClass, description) {
+    previousScrollPosition = window.scrollY || document.documentElement.scrollTop;
+    
+    const mainDash = document.getElementById('main-dashboard');
+    if (mainDash) mainDash.style.display = 'none';
+    
+    const secTitle = document.getElementById('section-title');
+    const contentHead = document.getElementById('content-heading');
+    const contentDesc = document.getElementById('content-desc');
+
+    if (secTitle) secTitle.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${title}`;
+    if (contentHead) contentHead.textContent = `Welcome to ${title}`;
+    if (contentDesc) contentDesc.textContent = description;
+
+    const innerSec = document.getElementById('inner-section');
+    if (innerSec) innerSec.style.display = 'block';
+    
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function closeSection() {
+    const innerSec = document.getElementById('inner-section');
+    const mainDash = document.getElementById('main-dashboard');
+
+    if (innerSec) innerSec.style.display = 'none';
+    if (mainDash) mainDash.style.display = 'grid';
+    
+    window.scrollTo({ top: previousScrollPosition, behavior: 'instant' });
+  }
 </script>
 
   
