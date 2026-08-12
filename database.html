@@ -326,5 +326,31 @@
       window.scrollTo({ top: previousScrollPosition, behavior: 'instant' });
     }
   </script>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // 2. Apki apni Firebase Config Keys
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+    authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+    projectId: "ss-kanhaiyalal-agrawal",
+    storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+    messagingSenderId: "776171239833",
+    appId: "1:776171239833:web:39eea44420db97384b3b08",
+    measurementId: "G-TQKTRTKBEJ"
+  };
+
+  // 3. Firebase ko start karna
+  firebase.initializeApp(firebaseConfig);
+  
+  // 4. Database Connection Object (db)
+  const db = firebase.firestore();
+
+  console.log("Firebase Connected Successfully!");
+</script>
+
+  
 </body>
 </html>
