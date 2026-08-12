@@ -186,167 +186,11 @@
 
   </div>
 
-  <script>
-    // System Default Logic - Setting initial defaults for LocalStorage
-    document.addEventListener("DOMContentLoaded", function() {
-      // If admin hasn't set these yet, default to the requested ones
-      if (!localStorage.getItem('site_school_name')) {
-        localStorage.setItem('site_school_name', 'SSKL Agrawal Memorial Bal Vidhya Mandir');
-        localStorage.setItem('site_tagline', '"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"');
-      }
-      
-      // Setup display
-      document.getElementById('display-school-name').textContent = localStorage.getItem('site_school_name');
-      document.getElementById('display-tagline').textContent = localStorage.getItem('site_tagline');
-    });
-
-    // 1. Navigation & Transitions
-    function goToAuth() {
-      document.getElementById('entry-block').style.display = 'none';
-      document.getElementById('auth-block').style.display = 'block';
-    }
-
-    function switchSection(sectionId) {
-      document.getElementById('login-section').style.display = 'none';
-      document.getElementById('signup-section').style.display = 'none';
-      document.getElementById('forgot-section').style.display = 'none';
-      
-      document.getElementById('signup-step-1').style.display = 'block';
-      document.getElementById('otp-section').style.display = 'none';
-      document.getElementById('forgot-step-1').style.display = 'block';
-      document.getElementById('forgot-otp-section').style.display = 'none';
-
-      document.getElementById(sectionId).style.display = 'block';
-    }
-
-    // 2. Eye Icon (Hide/Show Password)
-    function togglePassword(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    }
-
-    // 3. Signup & OTP Simulation
-    function sendSignupOTP() {
-      const user = document.getElementById('reg-username').value;
-      const phone = document.getElementById('reg-phone').value;
-      const pwd = document.getElementById('reg-pwd').value;
-
-      if (!user || !phone || !pwd) { alert("Please fill all details first!"); return; }
-      
-      alert("System Message: Your Verification OTP is 1234");
-      document.getElementById('signup-step-1').style.display = 'none';
-      document.getElementById('otp-section').style.display = 'block';
-    }
-
-    function cancelOTP(step1, step2) {
-      document.getElementById(step1).style.display = 'block';
-      document.getElementById(step2).style.display = 'none';
-    }
-
-    function verifyAndCreate() {
-      const otp = document.getElementById('reg-otp').value;
-      if (otp !== '1234') { alert("Invalid OTP! (Try 1234)"); return; }
-
-      const phone = document.getElementById('reg-phone').value;
-      const pwd = document.getElementById('reg-pwd').value;
-      localStorage.setItem('user_phone', phone);
-      localStorage.setItem('user_pwd', pwd);
-
-      openDatabasePage();
-
-const msg = document.createElement("div");
-msg.innerText = "Account Created Successfully! Welcome To Portal";
-msg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
-sessionStorage.setItem("showToast", "true");
-setTimeout(() => {msg.remove(); }, 2000);
-
-    }
-
-    // 4. Login Logic (With Admin Password Checking)
-    function handleLogin() {
-      const phone = document.getElementById('login-phone').value;
-      const pwd = document.getElementById('login-pwd').value;
-      
-      // ADMIN BYPASS LOGIC (using your secret password)
-      if (pwd === '@abhinav0099') {
-         openDatabasePage();
-
-const adminMsg = document.createElement("div");
-adminMsg.innerText = "Welcome Admin Abhinav! (Admin Panel & Dashboard open ho rahe hain)";
-adminMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
-document.body.appendChild(adminMsg);
-setTimeout(() => { adminMsg.remove(); }, 2000);
-         return;
-      }
-
-      // NORMAL USER LOGIC
-      const savedPhone = localStorage.getItem('user_phone');
-      const savedPwd = localStorage.getItem('user_pwd');
-
-      if (phone === savedPhone && pwd === savedPwd) {
-        openDatabasePage();
-
-const userMsg = document.createElement("div");
-userMsg.innerText = "Login Successful! Welcome to SS KanhaiyaLal Portal.";
-userMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
-document.body.appendChild(userMsg);
-
-setTimeout(() => { userMsg.remove(); }, 2000);
-      } else {
-        alert("Incorrect Phone or Password. (Have you signed up?)");
-      }
-    }
-
-    // 5. Forgot Password Logic
-    function sendForgotOTP() {
-      const phone = document.getElementById('reset-phone').value;
-      if (!phone) { alert("Enter phone number first!"); return; }
-      
-      alert("System Message: Your Password Reset OTP is 1234");
-      document.getElementById('forgot-step-1').style.display = 'none';
-      document.getElementById('forgot-otp-section').style.display = 'block';
-    }
-
-    function resetPassword() {
-      const otp = document.getElementById('reset-otp').value;
-      const newPwd = document.getElementById('new-pwd').value;
-      const confirmPwd = document.getElementById('confirm-pwd').value;
-
-      if (otp !== '1234') { alert("Invalid OTP!"); return; }
-      if (newPwd !== confirmPwd) { alert("Passwords do not match!"); return; }
-      if (!newPwd) { alert("Enter a new password!"); return; }
-
-      localStorage.setItem('user_pwd', newPwd);
-      openDatabasePage();
-
-const resetMsg = document.createElement("div");
-resetMsg.innerText = "Password Reset Successfully! Welcome to SS KanhaiyaLal Portal.";
-resetMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
-document.body.appendChild(resetMsg);
-
-setTimeout(() => { resetMsg.remove(); }, 2000);
-    }
-
-     function openDatabasePage() {
-    window.location.href = 'database.html';
-    }
-  </script>
-
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // 2. Apki apni Firebase Config Keys
+  // 1. Firebase Configuration Keys
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -357,13 +201,210 @@ setTimeout(() => { resetMsg.remove(); }, 2000);
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 3. Firebase ko start karna
-  firebase.initializeApp(firebaseConfig);
-  
-  // 4. Database Connection Object (db)
+  // 2. Start Firebase
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const db = firebase.firestore();
 
-  console.log("Firebase Connected Successfully!");
+  // System Default Logic - Setting initial defaults for LocalStorage
+  document.addEventListener("DOMContentLoaded", function() {
+    if (!localStorage.getItem('site_school_name')) {
+      localStorage.setItem('site_school_name', 'SSKL Agrawal Memorial Bal Vidhya Mandir');
+      localStorage.setItem('site_tagline', '"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"');
+    }
+    
+    const schoolNameElem = document.getElementById('display-school-name');
+    const taglineElem = document.getElementById('display-tagline');
+    if (schoolNameElem) schoolNameElem.textContent = localStorage.getItem('site_school_name');
+    if (taglineElem) taglineElem.textContent = localStorage.getItem('site_tagline');
+  });
+
+  // 1. Navigation & Transitions
+  function goToAuth() {
+    document.getElementById('entry-block').style.display = 'none';
+    document.getElementById('auth-block').style.display = 'block';
+  }
+
+  function switchSection(sectionId) {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('signup-section').style.display = 'none';
+    document.getElementById('forgot-section').style.display = 'none';
+    
+    document.getElementById('signup-step-1').style.display = 'block';
+    document.getElementById('otp-section').style.display = 'none';
+    document.getElementById('forgot-step-1').style.display = 'block';
+    document.getElementById('forgot-otp-section').style.display = 'none';
+
+    document.getElementById(sectionId).style.display = 'block';
+  }
+
+  // 2. Eye Icon (Hide/Show Password)
+  function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
+  }
+
+  // 3. Signup & OTP Simulation
+  function sendSignupOTP() {
+    const user = document.getElementById('reg-username').value;
+    const phone = document.getElementById('reg-phone').value;
+    const pwd = document.getElementById('reg-pwd').value;
+
+    if (!user || !phone || !pwd) { alert("Please fill all details first!"); return; }
+    
+    alert("System Message: Your Verification OTP is 1234");
+    document.getElementById('signup-step-1').style.display = 'none';
+    document.getElementById('otp-section').style.display = 'block';
+  }
+
+  function cancelOTP(step1, step2) {
+    document.getElementById(step1).style.display = 'block';
+    document.getElementById(step2).style.display = 'none';
+  }
+
+  // 🔥 FIREBASE INTEGRATED: Account Creation
+  function verifyAndCreate() {
+    const otp = document.getElementById('reg-otp').value;
+    if (otp !== '1234') { alert("Invalid OTP! (Try 1234)"); return; }
+
+    const username = document.getElementById('reg-username').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const pwd = document.getElementById('reg-pwd').value.trim();
+
+    // Firebase Database me naya user account save karna
+    db.collection("users").doc(phone).set({
+      username: username,
+      phone: phone,
+      pwd: pwd,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      // Profile sync ke liye session store karna
+      localStorage.setItem('loggedInUser', username);
+      localStorage.setItem('user_phone', phone);
+
+      const msg = document.createElement("div");
+      msg.innerText = "Account Created Successfully! Welcome To Portal";
+      msg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+      document.body.appendChild(msg);
+
+      setTimeout(() => {
+        msg.remove();
+        openDatabasePage();
+      }, 1500);
+    }).catch((error) => {
+      console.error("Signup error:", error);
+      alert("Error creating account in Firebase: " + error.message);
+    });
+  }
+
+  // 🔥 FIREBASE INTEGRATED: Login Logic
+  function handleLogin() {
+    const phone = document.getElementById('login-phone').value.trim();
+    const pwd = document.getElementById('login-pwd').value.trim();
+
+    if (!phone || !pwd) {
+      alert("Please enter phone and password!");
+      return;
+    }
+    
+    // ADMIN BYPASS LOGIC
+    if (pwd === '@abhinav0099') {
+      localStorage.setItem('loggedInUser', 'Abhinav (Admin)');
+      const adminMsg = document.createElement("div");
+      adminMsg.innerText = "Welcome Admin Abhinav! (Admin Panel & Dashboard open ho rahe hain)";
+      adminMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+      document.body.appendChild(adminMsg);
+
+      setTimeout(() => { 
+        adminMsg.remove(); 
+        openDatabasePage();
+      }, 1500);
+      return;
+    }
+
+    // NORMAL USER FIREBASE DATABASE CHECK
+    db.collection("users").doc(phone).get().then((doc) => {
+      if (doc.exists) {
+        const userData = doc.data();
+        if (userData.pwd === pwd) {
+          localStorage.setItem('loggedInUser', userData.username || 'User');
+          localStorage.setItem('user_phone', phone);
+
+          const userMsg = document.createElement("div");
+          userMsg.innerText = "Login Successful! Welcome to SS KanhaiyaLal Portal.";
+          userMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+          document.body.appendChild(userMsg);
+
+          setTimeout(() => { 
+            userMsg.remove(); 
+            openDatabasePage();
+          }, 1500);
+        } else {
+          alert("Incorrect Password!");
+        }
+      } else {
+        alert("Account not found for this phone number! Please sign up first.");
+      }
+    }).catch((error) => {
+      console.error("Login Error:", error);
+      alert("Login error: " + error.message);
+    });
+  }
+
+  // 5. Forgot Password Logic
+  function sendForgotOTP() {
+    const phone = document.getElementById('reset-phone').value.trim();
+    if (!phone) { alert("Enter phone number first!"); return; }
+    
+    alert("System Message: Your Password Reset OTP is 1234");
+    document.getElementById('forgot-step-1').style.display = 'none';
+    document.getElementById('forgot-otp-section').style.display = 'block';
+  }
+
+  // 🔥 FIREBASE INTEGRATED: Reset Password Logic
+  function resetPassword() {
+    const phone = document.getElementById('reset-phone').value.trim();
+    const otp = document.getElementById('reset-otp').value.trim();
+    const newPwd = document.getElementById('new-pwd').value.trim();
+    const confirmPwd = document.getElementById('confirm-pwd').value.trim();
+
+    if (otp !== '1234') { alert("Invalid OTP!"); return; }
+    if (newPwd !== confirmPwd) { alert("Passwords do not match!"); return; }
+    if (!newPwd) { alert("Enter a new password!"); return; }
+
+    // Update password in Firebase Firestore
+    db.collection("users").doc(phone).update({
+      pwd: newPwd
+    }).then(() => {
+      const resetMsg = document.createElement("div");
+      resetMsg.innerText = "Password Reset Successfully! Welcome to SS KanhaiyaLal Portal.";
+      resetMsg.style.cssText = "position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:8px; z-index:9999; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif;";
+      document.body.appendChild(resetMsg);
+
+      setTimeout(() => { 
+        resetMsg.remove(); 
+        openDatabasePage();
+      }, 1500);
+    }).catch((error) => {
+      console.error("Reset password error:", error);
+      alert("Error resetting password. Make sure the phone number is registered!");
+    });
+  }
+
+  function openDatabasePage() {
+    window.location.href = 'database.html';
+  }
 </script>
 
   
