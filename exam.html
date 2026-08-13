@@ -1086,34 +1086,52 @@ async function initPortal() {
         }
 
         // Fetch Exam Schedule from Firebase
-        async function loadExamsFromFirebase() {
-            const container = document.getElementById('examsListContainer');
-            try {
-                const snapshot = await db.collection('exam_schedule').orderBy('timestamp', 'asc').get();
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="no-data">No upcoming exam schedules found. Teachers can publish timetables from Firestore.</div>';
-                    allExamsData = [];
-                    return;
-                }
-                allExamsData = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (!data.stream || data.stream === 'All' || data.stream === studentStream) {
-                        allExamsData.push({ id: doc.id, ...data });
-                    }
-                });
+      // Fetch & Filter Exam Schedule based on Student Class & Stream
+async function loadExamsFromFirebase() {
+    const container = document.getElementById('examsContainer') || document.getElementById('examsList');
+    
+    try {
+        const snapshot = await db.collection('exams').get();
+        allExamsData = [];
 
-                if (allExamsData.length === 0) {
-                    container.innerHTML = `<div class="no-data">No specific exam schedules for ${studentStream} stream currently.</div>`;
-                    return;
-                }
-
-                renderExams(allExamsData);
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = '<div class="no-data">Failed to load exam schedule.</div>';
-            }
+        if (snapshot.empty) {
+            if (container) container.innerHTML = '<div class="no-data" style="text-align:center; padding: 20px;">No Exams Found</div>';
+            return;
         }
+
+        // Profile se Class aur Stream nikalo
+        let studentClass = studentProfile.class || studentProfile.classSection || "";
+        let studentStream = studentProfile.stream || "";
+
+        // Har exam check karo ki student ke liye hai ya nahi
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            // 1. Class Match Check (Ya to 'All' ho ya student ki class se match kare)
+            let classMatch = !data.class || data.class === "All" || data.class === studentClass;
+            
+            // 2. Stream Match Check (Ya to 'All'/'General' ho ya student ki stream se match kare)
+            let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === studentStream;
+
+            // Agar Class aur Stream dono match karein tabhi push karo
+            if (classMatch && streamMatch) {
+                allExamsData.push({ id: doc.id, ...data });
+            }
+        });
+
+        // Agar filtering ke baad koi exam nahi mila
+        if (allExamsData.length === 0) {
+            if (container) container.innerHTML = '<div class="no-data" style="text-align:center; padding: 20px;">Apki Class/Stream ke liye koi exam nahi hai.</div>';
+            return;
+        }
+
+        // Filtered data ko renderExams function me bhejo
+        renderExams(allExamsData);
+
+    } catch (err) {
+        console.log("Error loading filtered exams:", err);
+    }
+}
 
         function renderExams(list) {
             const container = document.getElementById('examsListContainer');
