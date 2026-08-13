@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Exact Notice Board Styles Copied & Scaled */
+        /* Exact Notice Board Styles */
         * {
             margin: 0;
             padding: 0;
@@ -80,7 +80,7 @@
             color: #ffffff;
         }
 
-        /* Controls Section (Search & Filters) */
+        /* Controls Section (Search Only) */
         .controls-card {
             background: #1e293b;
             border: 1px solid #334155;
@@ -92,7 +92,6 @@
 
         .search-box {
             position: relative;
-            margin-bottom: 18px;
         }
 
         .search-box i {
@@ -118,52 +117,6 @@
         .search-box input:focus {
             border-color: #38bdf8;
         }
-
-        .filters {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #cbd5e1;
-            padding: 7px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .filter-btn:hover {
-            background: #334155;
-            color: #fff;
-        }
-
-        .filter-btn.active {
-            background: #2563eb;
-            color: #fff;
-            border-color: #2563eb;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        
-        /* Subject Color Dots */
-        .dot-urgent { background: #ef4444; }
-        .dot-exam { background: #38bdf8; }
-        .dot-holiday { background: #eab308; }
-        .dot-sports { background: #22c55e; }
-        .dot-bookmarks { background: #a855f7; }
 
         /* Empty State */
         .empty-state {
@@ -217,7 +170,7 @@
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 10px;
         }
 
@@ -236,27 +189,13 @@
             justify-content: center;
             align-items: center;
             font-size: 16px;
+            color: #38bdf8;
         }
-
-        .type-urgent { color: #ef4444; }
-        .type-exam { color: #38bdf8; }
-        .type-holiday { color: #eab308; }
-        .type-sports { color: #22c55e; }
-        .type-general { color: #a855f7; }
 
         .card-title {
             font-size: 15px;
             font-weight: 600;
             color: #f8fafc;
-            margin-bottom: 4px;
-        }
-
-        .card-meta {
-            font-size: 11px;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .card-date {
@@ -331,7 +270,7 @@
             position: relative;
         }
 
-        .modal-header {
+                .modal-header {
             padding: 18px 20px;
             border-bottom: 1px solid #334155;
             display: flex;
@@ -417,13 +356,10 @@
             .card-header {
                 flex-direction: column;
                 gap: 10px;
+                align-items: flex-start;
             }
             .card-date {
                 align-self: flex-start;
-            }
-            .modal-meta-area {
-                flex-direction: column;
-                gap: 4px;
             }
             .brand { font-size: 15px; }
             .btn-dashboard { font-size: 12px; padding: 6px 10px; }
@@ -448,15 +384,6 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="searchInput" placeholder="Search assignments by keyword..." onkeyup="handleSearch()">
             </div>
-            
-            <div class="filters">
-                <button class="filter-btn active" onclick="setFilter('All', this)">All</button>
-                <button class="filter-btn" onclick="setFilter('Mathematics', this)"><span class="dot dot-urgent"></span> Mathematics</button>
-                <button class="filter-btn" onclick="setFilter('Science', this)"><span class="dot dot-exam"></span> Science</button>
-                <button class="filter-btn" onclick="setFilter('English', this)"><span class="dot dot-holiday"></span> English</button>
-                <button class="filter-btn" onclick="setFilter('Hindi', this)"><span class="dot dot-sports"></span> Hindi</button>
-                <button class="filter-btn" onclick="setFilter('Social Science', this)"><span class="dot dot-bookmarks"></span> SST</button>
-            </div>
         </div>
 
         <div class="list-container" id="assignmentsContainer">
@@ -469,7 +396,6 @@
                 <div class="modal-title-area">
                     <h2 id="modalTitle">Assignment Title</h2>
                     <div class="modal-meta-area">
-                        <span><i class="fa-solid fa-tag"></i> <span id="modalSubject">Subject</span></span>
                         <span><i class="fa-solid fa-calendar"></i> Due: <span id="modalDate">Date</span></span>
                     </div>
                 </div>
@@ -516,14 +442,13 @@
 
         // State Variables
         let assignmentsData = [];
-        let currentFilter = "All";
         let searchQuery = "";
         let currentAttachmentUrl = "";
 
         // UI Elements
         const container = document.getElementById('assignmentsContainer');
 
-        // Fetch Data from Firestore (NO DUMMY DATA)
+        // Fetch Data from Firestore
         function loadAssignments() {
             db.collection("assignments").get().then((snapshot) => {
                 let data = [];
@@ -531,12 +456,10 @@
                     data.push({ id: doc.id, ...doc.data() });
                 });
                 
-                // Direct assignment, empty or not
                 assignmentsData = data;
                 renderList();
             }).catch((error) => {
                 console.error("Firestore fetch error:", error);
-                // On error, show empty state
                 assignmentsData = [];
                 renderList();
             });
@@ -548,26 +471,15 @@
             renderList();
         }
 
-        // Handle Filter Button Clicks
-        function setFilter(subject, btnObj) {
-            currentFilter = subject;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            btnObj.classList.add('active');
-            renderList();
-        }
-
         // Render Cards List
         function renderList() {
             container.innerHTML = "";
 
             let filtered = assignmentsData.filter(item => {
-                let matchesSubject = (currentFilter === "All") || (item.subject === currentFilter);
-                let textToSearch = (item.title || '') + ' ' + (item.subject || '') + ' ' + (item.content || item.instructions || item.desc || '');
-                let matchesSearch = textToSearch.toLowerCase().includes(searchQuery);
-                return matchesSubject && matchesSearch;
+                let textToSearch = (item.title || '') + ' ' + (item.content || item.instructions || item.desc || '') + ' ' + (item.teacher || '');
+                return textToSearch.toLowerCase().includes(searchQuery);
             });
 
-            // Clean Empty State Trigger (No Fake Data)
             if (filtered.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -580,16 +492,6 @@
             }
 
             filtered.forEach(item => {
-                let itemIcon = item.icon || "fa-book";
-                let itemColor = item.colorClass || "type-general";
-                let itemDot = item.dotClass || "dot-holiday";
-
-                if (item.subject === "Mathematics") { itemIcon = "fa-calculator"; itemColor = "type-urgent"; itemDot = "dot-urgent"; }
-                else if (item.subject === "Science") { itemIcon = "fa-flask"; itemColor = "type-exam"; itemDot = "dot-exam"; }
-                else if (item.subject === "English") { itemIcon = "fa-book-open"; itemColor = "type-holiday"; itemDot = "dot-holiday"; }
-                else if (item.subject === "Hindi") { itemIcon = "fa-language"; itemColor = "type-sports"; itemDot = "dot-sports"; }
-                else if (item.subject === "Social Science") { itemIcon = "fa-globe"; itemColor = "type-general"; itemDot = "dot-bookmarks"; }
-
                 let displayDate = item.date || item.dueDate || "N/A";
                 try { 
                     if(displayDate !== "N/A") {
@@ -606,15 +508,11 @@
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-title-group">
-                            <div class="card-icon ${itemColor}">
-                                <i class="fa-solid ${itemIcon}"></i>
+                            <div class="card-icon">
+                                <i class="fa-solid fa-file-lines"></i>
                             </div>
                             <div>
                                 <h3 class="card-title">${item.title || 'Assignment'}</h3>
-                                <div class="card-meta">
-                                    <span class="dot ${itemDot}"></span>
-                                    <span>${item.subject || 'General'}</span>
-                                </div>
                             </div>
                         </div>
                         <div class="card-date">
@@ -653,7 +551,6 @@
             let mainContent = item.content || item.instructions || item.desc || "No extra instructions provided.";
 
             document.getElementById('modalTitle').innerText = item.title || 'Assignment Details';
-            document.getElementById('modalSubject').innerText = item.subject || 'General';
             document.getElementById('modalDate').innerText = displayDate;
             document.getElementById('modalContent').innerText = mainContent;
             
