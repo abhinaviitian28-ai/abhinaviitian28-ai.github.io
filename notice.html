@@ -500,7 +500,8 @@
         }
     </style>
 </head>
-<body>
+
+    <body>
 
     <div class="container">
         
@@ -566,10 +567,10 @@
                         <i class="fa-solid fa-file-pdf"></i>
                         <div class="attachment-text">
                             <div class="attachment-filename" id="attachName">Document.pdf</div>
-                            <div class="attachment-filesize" id="attachSize">-- • PDF Document</div>
+                            <div class="attachment-filesize" id="attachSize">-- • File</div>
                         </div>
                     </div>
-                    <a href="#" id="attachDownloadLink" class="download-btn" download>
+                    <a href="#" id="attachDownloadLink" class="download-btn" download target="_blank">
                         <i class="fa-solid fa-download"></i> Download
                     </a>
                 </div>
@@ -579,7 +580,7 @@
 
     </div>
 
-   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
@@ -600,30 +601,63 @@
   }
   const db = firebase.firestore();
 
-  // Global Variables
+  // Global Variables for Student Profile & Filter
+  let loggedInUser = localStorage.getItem('loggedInUser');
+  let studentProfile = {};
   let allNotices = [];
   let currentFilter = 'all';
   let currentSearchQuery = '';
   let bookmarkedIds = JSON.parse(localStorage.getItem('noticeBookmarks')) || [];
   let activeNoticeId = null;
 
-  // 3. Firebase Live Real-time Listener (Data automatically sync hoga)
-  db.collection("notices").onSnapshot((snapshot) => {
-    allNotices = [];
-    snapshot.forEach((doc) => {
-      allNotices.push({
-        id: doc.id,
-        ...doc.data()
+  // 3. Initialize Portal: Load Profile first, then setup Real-time Notice Listener
+  async function initNoticePortal() {
+    if (loggedInUser) {
+      try {
+        const querySnapshot = await db.collection('students').where('name', '==', loggedInUser).get();
+        if (!querySnapshot.empty) {
+          studentProfile = querySnapshot.docs[0].data();
+        }
+      } catch (err) {
+        console.error("Profile fetch error in notice portal:", err);
+      }
+    }
+
+    // Connect to Firebase Real-time Listener after fetching profile
+    setupNoticeListener();
+  }
+
+  // 4. Firebase Live Real-time Listener with Class & Stream Filtering
+  function setupNoticeListener() {
+    db.collection("notices").onSnapshot((snapshot) => {
+      allNotices = [];
+      
+      let studentClass = studentProfile.class || studentProfile.classSection || "";
+      let studentStream = studentProfile.stream || "";
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+
+        // Check if notice matches student class & stream
+        let classMatch = !data.class || data.class === "All" || data.class === studentClass;
+        let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === studentStream;
+
+        if (classMatch && streamMatch) {
+          allNotices.push({
+            id: doc.id,
+            ...data
+          });
+        }
       });
+
+      // Naye notices ko sabse upar dikhane ke liye sort karein
+      allNotices.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+      renderNotices();
+    }, (error) => {
+      console.error("Firebase se notice lane me error:", error);
     });
-
-    // Naye notices ko sabse upar dikhane ke liye sort karein
-    allNotices.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-    renderNotices();
-  }, (error) => {
-    console.error("Firebase se notice lane me error:", error);
-  });
+  }
 
   function saveBookmarks() {
     localStorage.setItem('noticeBookmarks', JSON.stringify(bookmarkedIds));
@@ -684,7 +718,7 @@
           <div class="empty-state">
             <i class="fa-solid fa-bell-slash"></i>
             <h3>No Notices Published Yet</h3>
-            <p>When teachers post new notices, they will appear here automatically.</p>
+            <p>Aapki Class/Stream ke liye koi naya notice nahi hai.</p>
           </div>
         `;
       } else {
@@ -815,8 +849,10 @@
     document.getElementById('listView').style.display = 'block';
     renderNotices();
   }
+
+  // Start initialization on page load
+  window.onload = initNoticePortal;
 </script>
 
-    
 </body>
 </html>
