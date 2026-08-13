@@ -270,7 +270,7 @@
             position: relative;
         }
 
-                .modal-header {
+        .modal-header {
             padding: 18px 20px;
             border-bottom: 1px solid #334155;
             display: flex;
@@ -366,6 +366,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -387,7 +388,11 @@
         </div>
 
         <div class="list-container" id="assignmentsContainer">
+            <div class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <h3>Loading Assignments...</h3>
             </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="assignmentModal">
@@ -420,7 +425,9 @@
     <script>
         // Check Login Session
         const loggedInUser = localStorage.getItem('loggedInUser');
-        if (!loggedInUser) {
+        const userEmail = localStorage.getItem('user_email');
+
+        if (!loggedInUser && !userEmail) {
             window.location.href = 'index.html';
         }
 
@@ -441,25 +448,75 @@
         const db = firebase.firestore();
 
         // State Variables
+        let studentProfile = {};
+        let currentClass = "";
+        let currentStream = "";
         let assignmentsData = [];
         let searchQuery = "";
         let currentAttachmentUrl = "";
+        let assignmentsUnsubscribe = null;
 
         // UI Elements
         const container = document.getElementById('assignmentsContainer');
 
-        // Fetch Data from Firestore
-        function loadAssignments() {
-            db.collection("assignments").get().then((snapshot) => {
-                let data = [];
-                snapshot.forEach(doc => {
-                    data.push({ id: doc.id, ...doc.data() });
-                });
+        // 1. Initialize Portal
+        async function initAssignmentPortal() {
+            await fetchStudentProfile();
+            setupRealtimeAssignments();
+        }
+
+        // 2. Fetch Student Profile for Class and Stream
+        async function fetchStudentProfile() {
+            try {
+                const studentsRef = db.collection('students');
+                let querySnapshot = await studentsRef.where('name', '==', loggedInUser).get();
                 
-                assignmentsData = data;
+                if (querySnapshot.empty && userEmail) {
+                    querySnapshot = await studentsRef.where('email', '==', userEmail).get();
+                }
+
+                if (!querySnapshot.empty) {
+                    studentProfile = querySnapshot.docs[0].data();
+                    currentClass = studentProfile.class || studentProfile.classSection || "";
+                    currentStream = studentProfile.stream || "";
+                }
+            } catch (err) {
+                console.log("Error fetching profile for assignments:", err);
+            }
+        }
+
+        // 3. Real-time Live Listener with Class & Stream Filtering
+        function setupRealtimeAssignments() {
+            if (assignmentsUnsubscribe) assignmentsUnsubscribe();
+
+            assignmentsUnsubscribe = db.collection("assignments").onSnapshot((snapshot) => {
+                assignmentsData = [];
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+
+                    // Filter assignments according to Student Class and Stream
+                    let classMatch = !data.class || data.class === "All" || data.class === currentClass;
+                    let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === currentStream;
+
+                    if (classMatch && streamMatch) {
+                        assignmentsData.push({
+                            id: doc.id,
+                            ...data
+                        });
+                    }
+                });
+
+                // Sort newest or due date first
+                assignmentsData.sort((a, b) => {
+                    let timeA = a.createdAt ? a.createdAt.seconds : 0;
+                    let timeB = b.createdAt ? b.createdAt.seconds : 0;
+                    return timeB - timeA;
+                });
+
                 renderList();
-            }).catch((error) => {
-                console.error("Firestore fetch error:", error);
+            }, (error) => {
+                console.error("Firestore real-time error:", error);
                 assignmentsData = [];
                 renderList();
             });
@@ -485,7 +542,7 @@
                     <div class="empty-state">
                         <i class="fa-solid fa-bell-slash"></i>
                         <h3>No Assignments Published Yet</h3>
-                        <p>When teachers post new assignments, they will appear here automatically.</p>
+                        <p>Aapki Class/Stream ke liye koi naya assignment nahi hai.</p>
                     </div>
                 `;
                 return;
@@ -554,7 +611,15 @@
             document.getElementById('modalDate').innerText = displayDate;
             document.getElementById('modalContent').innerText = mainContent;
             
-            currentAttachmentUrl = item.attachmentUrl || item.fileUrl || "#";
+            currentAttachmentUrl = item.attachmentUrl || item.fileUrl || item.url || "#";
+            
+            const btnDownload = document.getElementById('btnDownload');
+            if (currentAttachmentUrl && currentAttachmentUrl !== "#") {
+                btnDownload.style.display = 'inline-flex';
+            } else {
+                btnDownload.style.display = 'none';
+            }
+
             document.getElementById('assignmentModal').style.display = 'flex';
         }
 
@@ -579,7 +644,7 @@
         }
 
         // Initialize on page load
-        document.addEventListener("DOMContentLoaded", loadAssignments);
+        document.addEventListener("DOMContentLoaded", initAssignmentPortal);
     </script>
 </body>
 </html>
