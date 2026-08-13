@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
+    <title>Student Dashboard - Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -97,19 +98,33 @@
             gap: 20px;
         }
 
+        /* Dynamic Male / Female Avatar Style */
         .avatar {
-            width: 75px;
-            height: 75px;
+            width: 80px;
+            height: 80px;
             background: #ffffff;
             color: #0056b3;
-            font-size: 32px;
+            font-size: 38px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px; 
-            border: 2px solid #e0e0e0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 50%; 
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .avatar.male-avatar {
+            background: #e0f2fe;
+            border-color: #38bdf8;
+            color: #0284c7;
+        }
+
+        .avatar.female-avatar {
+            background: #fce7f3;
+            border-color: #f472b6;
+            color: #db2777;
         }
 
         .user-info h2 {
@@ -191,7 +206,7 @@
             font-weight: 600;
         }
 
-                /* Details Grid */
+        /* Details Grid */
         .details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -373,7 +388,8 @@
         }
     </style>
 </head>
-<body>
+
+    <body>
 
     <div class="container">
         <a href="database.html" class="back-btn">
@@ -387,7 +403,7 @@
 
         <div class="profile-card">
             <div class="profile-header-section">
-                <div class="avatar" id="avatarInitial">U</div>
+                <div class="avatar" id="avatarInitial">👨‍🎓</div>
                 <div class="user-info">
                     <h2 id="displayUsername">Loading...</h2>
                     <button class="edit-btn" onclick="toggleEditBox()">✏️ Edit Username</button>
@@ -416,7 +432,7 @@
                 </div>
 
                 <div class="detail-item">
-                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-label">Phone / Email</div>
                     <div class="detail-value">
                         <span class="phone-protected" id="displayPhone">Loading...</span>
                     </div>
@@ -490,7 +506,7 @@
             <div class="form-group">
                 <label>Stream / Curriculum</label>
                 <select id="inputStream">
-                    </select>
+                </select>
             </div>
 
             <div class="modal-actions">
@@ -549,30 +565,40 @@
           data.username || 'Student',
           data.email || loggedInEmail,
           data.rollNo || 'Not Set',
-          data.gender || 'Not Set',
+          data.gender || 'Male',
           data.studentClass || '10th',
           data.section || 'A',
           data.stream || 'General / All Subjects'
         );
       } else {
         console.log("No user record found in Firebase for email:", loggedInEmail);
-        updateUI("User", loggedInEmail, "Not Set", "Not Set", "10th", "A", "General / All Subjects");
+        updateUI("User", loggedInEmail, "Not Set", "Male", "10th", "A", "General / All Subjects");
       }
     }).catch((error) => {
       console.error("Firebase profile fetch error:", error);
-      updateUI("User", loggedInEmail, "Not Set", "Not Set", "10th", "A", "General / All Subjects");
+      updateUI("User", loggedInEmail, "Not Set", "Male", "10th", "A", "General / All Subjects");
     });
   }
 
+  // Male aur Female ke hisab se Avatar Badalne ka Logic
   function updateUI(name, email, roll, gender, cls, sec, stream) {
     const displayElement = document.getElementById('displayUsername');
     const avatarElement = document.getElementById('avatarInitial');
-    // Display Email ya Phone Element dono me se jo bhi aapke HTML me ho
     const emailElement = document.getElementById('displayEmail') || document.getElementById('displayPhone');
 
     if (displayElement) displayElement.innerText = name;
-    if (avatarElement) avatarElement.innerText = name.charAt(0).toUpperCase();
     if (emailElement) emailElement.innerText = email;
+
+    // Male vs Female Avatar Setup
+    if (avatarElement) {
+      if (gender === 'Female') {
+        avatarElement.innerHTML = '👩‍🎓';
+        avatarElement.className = 'avatar female-avatar';
+      } else {
+        avatarElement.innerHTML = '👨‍🎓';
+        avatarElement.className = 'avatar male-avatar';
+      }
+    }
 
     if (document.getElementById('displayRoll')) document.getElementById('displayRoll').innerText = roll;
     if (document.getElementById('displayGender')) document.getElementById('displayGender').innerText = gender;
@@ -710,7 +736,7 @@
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
       const roll = document.getElementById('displayRoll') ? document.getElementById('displayRoll').innerText : 'Not Set';
-      const gender = document.getElementById('displayGender') ? document.getElementById('displayGender').innerText : 'Not Set';
+      const gender = document.getElementById('displayGender') ? document.getElementById('displayGender').innerText : 'Male';
       const classSecElem = document.getElementById('displayClassSection');
       const classSec = classSecElem ? classSecElem.innerText.split(' - ') : ['10th', 'A'];
       const stream = document.getElementById('displayStream') ? document.getElementById('displayStream').innerText : 'General / All Subjects';
