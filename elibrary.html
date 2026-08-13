@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Library Portal - SS KanhaiyaLal Agrawal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 15px; 
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 18px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px; 
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        .brand i {
+            background: rgba(234, 179, 8, 0.15);
+            padding: 8px; 
+            border-radius: 8px;
+            color: #eab308;
+            font-size: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-dashboard, .btn-back {
+            background: #334155;
+            color: #f8fafc;
+            text-decoration: none;
+            padding: 7px 14px; 
+            border-radius: 8px;
+            font-size: 13px; 
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #475569;
+        }
+
+        .btn-dashboard:hover, .btn-back:hover {
+            background: #475569;
+            color: #ffffff;
+        }
+
+        /* Search Bar View */
+        .search-section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-bar-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px 14px 10px 40px;
+            color: #f8fafc;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #eab308;
+        }
+
+        .filter-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            border-color: rgba(234, 179, 8, 0.4);
+        }
+
+        /* Section Title Header */
+        .view-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #eab308;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .view-title-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .count-badge {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        /* Categories Grid (Layer 1) */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+        }
+
+        .category-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 130px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #eab308;
+            opacity: 0.9;
+        }
+
+        .category-card:hover {
+            border-color: #eab308;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(234, 179, 8, 0.15);
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .category-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .category-count {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Files List View (Layer 2) */
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-card:hover {
+            border-color: #475569;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            flex-grow: 1;
+            padding-right: 15px;
+        }
+
+        .file-pdf-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .file-details h4 {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 3px;
+        }
+
+        .file-details p {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .file-meta {
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            gap: 12px;
+        }
+
+        .file-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: #334155;
+            color: #ffffff;
+            border-color: #475569;
+        }
+
+        .action-btn.download {
+            background: rgba(234, 179, 8, 0.1);
+            color: #eab308;
+            border-color: rgba(234, 179, 8, 0.3);
+        }
+
+        .action-btn.download:hover {
+            background: rgba(234, 179, 8, 0.2);
+        }
+
+        .bookmark-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px;
+            transition: 0.3s;
+        }
+
+        .bookmark-btn.bookmarked {
+            color: #facc15;
+        }
+
+        .bookmark-btn:hover {
+            color: #facc15;
+        }
+
+        .no-data {
+            color: #64748b;
+            font-size: 13px;
+            text-align: center;
+            padding: 30px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            .file-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .file-actions { width: 100%; justify-content: flex-end; }
+            .search-section { flex-direction: column; }
+            .filter-btn { width: 100%; justify-content: center; }
+            .view-title { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="top-bar">
+            <div class="brand">
+                <i class="fa-solid fa-book-open"></i>
+                <span>E-Library Portal</span>
+            </div>
+            <div class="header-actions">
+                <button id="backToCategoriesBtn" class="btn-back hidden" onclick="showCategoriesView()">
+                    <i class="fa-solid fa-arrow-left"></i> Categories
+                </button>
+                <a href="database.html" class="btn-dashboard">
+                    <i class="fa-solid fa-house"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div id="categoriesView">
+            <div class="view-title">
+                <div class="view-title-left">
+                    <i class="fa-solid fa-folder-open"></i> Subject & Resource Categories
+                </div>
+                <div class="count-badge">
+                    <span id="categoryCountNum">0</span> Subjects
+                </div>
+            </div>
+            <div class="categories-grid" id="categoriesGridContainer">
+                <div class="no-data">Loading Library Categories...</div>
+            </div>
+        </div>
+
+        <div id="filesView" class="hidden">
+            <div class="view-title">
+                <div class="view-title-left" id="currentCategoryTitle">
+                    <i class="fa-solid fa-book"></i> Category Name
+                </div>
+                <div class="count-badge" id="fileCountBadge">0 Files</div>
+            </div>
+
+            <div class="search-section">
+                <div class="search-bar-wrapper">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="fileSearchInput" class="search-input" placeholder="Search by heading, topic or description..." oninput="filterFiles()">
+                </div>
+                <button id="bookmarkFilterBtn" class="filter-btn" onclick="toggleBookmarkFilter()">
+                    <i class="fa-solid fa-bookmark"></i> Bookmarks Only
+                </button>
+            </div>
+
+            <div class="files-list" id="filesListContainer">
+                <div class="no-data">Loading Files...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Check Login Session
+        const loggedInUser = localStorage.getItem('loggedInUser');
+        const userEmail = localStorage.getItem('user_email');
+        if (!loggedInUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Firebase Configuration & Live API Keys Connected
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+            authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+            projectId: "ss-kanhaiyalal-agrawal",
+            storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+            messagingSenderId: "776171239833",
+            appId: "1:776171239833:web:39eea44420db97384b3b08",
+            measurementId: "G-TQKTRTKBEJ"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        let currentClass = "12th";
+        let currentStream = "Science";
+        let activeCategoryName = "";
+        let allFilesData = [];
+        let showBookmarksOnly = false;
+        
+        // Local bookmarks storage per user
+        let userBookmarks = JSON.parse(localStorage.getItem(`bookmarks_${loggedInUser}`)) || [];
+
+        // Auto-Icon selector for subjects
+        function getAutoIcon(categoryName) {
+            const name = (categoryName || '').toLowerCase();
+            if (name.includes('phys')) return 'fa-atom';
+            if (name.includes('chem')) return 'fa-flask';
+            if (name.includes('math') || name.includes('calc')) return 'fa-calculator';
+            if (name.includes('bio')) return 'fa-dna';
+            if (name.includes('eng') || name.includes('hindi') || name.includes('literature')) return 'fa-book-open';
+            if (name.includes('computer') || name.includes('it')) return 'fa-laptop-code';
+            if (name.includes('history') || name.includes('sst') || name.includes('geo')) return 'fa-landmark';
+            if (name.includes('econ') || name.includes('commerce')) return 'fa-chart-pie';
+            return 'fa-book';
+        }
+
+        // Load Student Class/Stream on start from Database
+        async function initLibrary() {
+            try {
+                const studentsRef = db.collection('students');
+                let querySnapshot = await studentsRef.where('name', '==', loggedInUser).get();
+                if (querySnapshot.empty && userEmail) {
+                    querySnapshot = await studentsRef.where('email', '==', userEmail).get();
+                }
+                if (!querySnapshot.empty) {
+                    const studentData = querySnapshot.docs[0].data();
+                    currentClass = studentData.class || currentClass;
+                    currentStream = studentData.stream || currentStream;
+                }
+            } catch (err) {
+                console.log("Using default session context");
+            }
+            loadCategories();
+        }
+
+        // 1. Load Categories (Layer 1) from Firestore Database
+        async function loadCategories() {
+            const gridContainer = document.getElementById('categoriesGridContainer');
+            try {
+                const catSnapshot = await db.collection('library_categories')
+                    .where('class', 'in', [currentClass, 'All'])
+                    .get();
+
+                if (catSnapshot.empty) {
+                    const generalSnapshot = await db.collection('library_categories').get();
+                    if (generalSnapshot.empty) {
+                        gridContainer.innerHTML = `<div class="no-data">No e-library categories or subjects added by teachers yet.</div>`;
+                        document.getElementById('categoryCountNum').innerText = 0;
+                        return;
+                    }
+                    renderCategories(generalSnapshot);
+                    return;
+                }
+
+                renderCategories(catSnapshot);
+            } catch (err) {
+                console.error("Error loading categories:", err);
+                gridContainer.innerHTML = `<div class="no-data">Unable to connect to database. Please check your internet connection.</div>`;
+            }
+        }
+
+        function renderCategories(snapshot) {
+            const gridContainer = document.getElementById('categoriesGridContainer');
+            gridContainer.innerHTML = '';
+            let count = 0;
+
+            snapshot.forEach(doc => {
+                const cat = doc.data();
+                count++;
+                const catName = cat.name || cat.title || 'Subject';
+                const iconClass = cat.icon || getAutoIcon(catName);
+
+                const cardHTML = `
+                    <div class="category-card" onclick="openCategory('${catName.replace(/'/g, "\\'")}')">
+                        <div>
+                            <div class="category-icon">
+                                <i class="fa-solid ${iconClass}"></i>
+                            </div>
+                            <div class="category-name">${catName}</div>
+                            <div class="category-desc" style="font-size:12px; color:#94a3b8; margin-top:4px;">${cat.description || 'Tap to view study materials'}</div>
+                        </div>
+                        <div class="category-count" style="margin-top: 12px; display:flex; justify-content:space-between; align-items:center;">
+                            <span><i class="fa-solid fa-file-pdf" style="color:#f87171;"></i> Resources available</span>
+                            <i class="fa-solid fa-chevron-right" style="font-size:11px; color:#eab308;"></i>
+                        </div>
+                    </div>
+                `;
+                gridContainer.innerHTML += cardHTML;
+            });
+
+            document.getElementById('categoryCountNum').innerText = count;
+        }
+
+        // Open specific category (Layer 2)
+        function openCategory(categoryName) {
+            activeCategoryName = categoryName;
+            document.getElementById('currentCategoryTitle').innerHTML = `<i class="fa-solid fa-book"></i> ${categoryName} Materials`;
+            
+            document.getElementById('categoriesView').classList.add('hidden');
+            document.getElementById('filesView').classList.remove('hidden');
+            document.getElementById('backToCategoriesBtn').classList.remove('hidden');
+            
+            document.getElementById('fileSearchInput').value = '';
+            showBookmarksOnly = false;
+            document.getElementById('bookmarkFilterBtn').classList.remove('active');
+
+            loadFilesInCategory(categoryName);
+        }
+
+        // Back button returns to Categories section first
+        function showCategoriesView() {
+            document.getElementById('filesView').classList.add('hidden');
+            document.getElementById('categoriesView').classList.remove('hidden');
+            document.getElementById('backToCategoriesBtn').classList.add('hidden');
+        }
+
+        // Load Files in selected category from Firestore Database
+        async function loadFilesInCategory(categoryName) {
+            const filesContainer = document.getElementById('filesListContainer');
+            filesContainer.innerHTML = `<div class="no-data">Loading files for ${categoryName}...</div>`;
+
+            try {
+                const filesSnapshot = await db.collection('library_files')
+                    .where('category', '==', categoryName)
+                    .orderBy('timestamp', 'desc')
+                    .get();
+
+                if (filesSnapshot.empty) {
+                    filesContainer.innerHTML = `<div class="no-data">No PDF files uploaded in ${categoryName} yet by teachers.</div>`;
+                    allFilesData = [];
+                    document.getElementById('fileCountBadge').innerText = `0 Files`;
+                    return;
+                }
+
+                allFilesData = [];
+                filesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    allFilesData.push({
+                        id: doc.id,
+                        title: data.title || data.heading || 'Untitled Document',
+                        description: data.description || data.desc || 'Study Material PDF',
+                        fileUrl: data.fileUrl || data.url || '#',
+                        date: data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : 'Recent'
+                    });
+                });
+
+                renderFilesList(allFilesData);
+
+            } catch (err) {
+                console.error("Error loading files:", err);
+                try {
+                    const fallbackSnapshot = await db.collection('library_files')
+                        .where('category', '==', categoryName)
+                        .get();
+                    
+                    if (fallbackSnapshot.empty) {
+                        filesContainer.innerHTML = `<div class="no-data">No PDF files found in ${categoryName}.</div>`;
+                        allFilesData = [];
+                        document.getElementById('fileCountBadge').innerText = `0 Files`;
+                        return;
+                    }
+
+                    allFilesData = [];
+                    fallbackSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        allFilesData.push({
+                            id: doc.id,
+                            title: data.title || data.heading || 'Untitled Document',
+                            description: data.description || data.desc || 'Study Material PDF',
+                            fileUrl: data.fileUrl || data.url || '#',
+                            date: 'Recent'
+                        });
+                    });
+                    renderFilesList(allFilesData);
+                } catch (e) {
+                    filesContainer.innerHTML = `<div class="no-data">Unable to fetch files from database. Please try again.</div>`;
+                }
+            }
+        }
+
+        // Render Files List with search and bookmarks support
+        function renderFilesList(files) {
+            const filesContainer = document.getElementById('filesListContainer');
+            
+            let filtered = files;
+            const searchKeyword = document.getElementById('fileSearchInput').value.toLowerCase().trim();
+
+            if (searchKeyword) {
+                filtered = filtered.filter(f => 
+                    f.title.toLowerCase().includes(searchKeyword) || 
+                    f.description.toLowerCase().includes(searchKeyword)
+                );
+            }
+
+            if (showBookmarksOnly) {
+                filtered = filtered.filter(f => userBookmarks.includes(f.id));
+            }
+
+            document.getElementById('fileCountBadge').innerText = `${filtered.length} Files`;
+
+            if (filtered.length === 0) {
+                filesContainer.innerHTML = `<div class="no-data">No matching files found.</div>`;
+                return;
+            }
+
+            filesContainer.innerHTML = '';
+
+            filtered.forEach(file => {
+                const isBookmarked = userBookmarks.includes(file.id);
+                const bookmarkClass = isBookmarked ? 'bookmarked fa-solid' : 'fa-regular';
+
+                const fileHTML = `
+                    <div class="file-card">
+                        <div class="file-info">
+                            <div class="file-pdf-icon">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div class="file-details">
+                                <h4>${file.title}</h4>
+                                <p>${file.description}</p>
+                                <div class="file-meta">
+                                    <span><i class="fa-regular fa-calendar"></i> ${file.date}</span>
+                                    <span><i class="fa-solid fa-shield-halved" style="color:#eab308;"></i> Verified PDF</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="bookmark-btn" onclick="toggleBookmark('${file.id}')" title="Bookmark File">
+                                <i class="${bookmarkClass} fa-bookmark"></i>
+                            </button>
+                            <a href="${file.fileUrl}" target="_blank" class="action-btn" title="View PDF">
+                                <i class="fa-solid fa-eye"></i> View
+                            </a>
+                            <a href="${file.fileUrl}" download class="action-btn download" title="Download PDF">
+                                <i class="fa-solid fa-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                `;
+                filesContainer.innerHTML += fileHTML;
+            });
+        }
+
+        function filterFiles() {
+            renderFilesList(allFilesData);
+        }
+
+        function toggleBookmarkFilter() {
+            showBookmarksOnly = !showBookmarksOnly;
+            const btn = document.getElementById('bookmarkFilterBtn');
+            if (showBookmarksOnly) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            renderFilesList(allFilesData);
+        }
+
+        function toggleBookmark(fileId) {
+            const index = userBookmarks.indexOf(fileId);
+            if (index > -1) {
+                userBookmarks.splice(index, 1);
+            } else {
+                userBookmarks.push(fileId);
+            }
+            localStorage.setItem(`bookmarks_${loggedInUser}`, JSON.stringify(userBookmarks));
+            renderFilesList(allFilesData);
+        }
+
+        window.onload = function() {
+            initLibrary();
+        };
+    </script>
+</body>
+</html>
