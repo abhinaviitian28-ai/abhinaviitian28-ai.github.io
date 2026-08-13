@@ -432,7 +432,7 @@
                 </div>
 
                 <div class="detail-item">
-                    <div class="detail-label">Phone / Email</div>
+                    <div class="detail-label">Email</div>
                     <div class="detail-value">
                         <span class="phone-protected" id="displayPhone">Loading...</span>
                     </div>
@@ -584,7 +584,7 @@
   function updateUI(name, email, roll, gender, cls, sec, stream) {
     const displayElement = document.getElementById('displayUsername');
     const avatarElement = document.getElementById('avatarInitial');
-    const emailElement = document.getElementById('displayEmail') || document.getElementById('displayPhone');
+    const emailElement = document.getElementById('displayEmail')
 
     if (displayElement) displayElement.innerText = name;
     if (emailElement) emailElement.innerText = email;
