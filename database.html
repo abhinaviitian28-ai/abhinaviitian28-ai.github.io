@@ -326,38 +326,32 @@
     loadUserGreeting();
   });
 
-  function loadUserGreeting() {
-    const savedPhone = localStorage.getItem('user_phone');
-    const loggedInUser = localStorage.getItem('loggedInUser');
-    const welcomeElem = document.getElementById('welcome-text');
+function loadUserGreeting() {
+  const savedEmail = localStorage.getItem('user_email');
+  const loggedInUser = localStorage.getItem('loggedInUser');
+  const welcomeElem = document.getElementById('welcome-text');
 
-    if (!welcomeElem) return;
+  if (!welcomeElem) return;
 
-    // Fast Load: Agar browser memory me naam hai to dikha do
-    if (loggedInUser) {
-      welcomeElem.textContent = `Hello, ${loggedInUser}!`;
-    }
-
-    // Live Fetch: Firebase Firestore Database se bilkul naya naam lekar aao
-    if (savedPhone) {
-      db.collection("users").doc(savedPhone).get().then((doc) => {
-        if (doc.exists && doc.data().username) {
-          const name = doc.data().username;
-          welcomeElem.textContent = `Hello, ${name}!`;
-          localStorage.setItem('loggedInUser', name);
-        }
-      }).catch((err) => {
-        console.log("Firebase greeting fetch error:", err);
-      });
-    } else {
-      // Fallback Document
-      db.collection("users").doc("current_user").get().then((doc) => {
-        if (doc.exists && doc.data().username) {
-          welcomeElem.textContent = `Hello, ${doc.data().username}!`;
-        }
-      });
-    }
+  // Fast Load: Agar browser memory me naam hai to dikha do
+  if (loggedInUser) {
+    welcomeElem.textContent = `Hello, ${loggedInUser}!`;
   }
+
+  // Live Fetch: Firebase Firestore Database se Email ke zariye naam lekar aao
+  if (savedEmail) {
+    db.collection("users").doc(savedEmail).get().then((doc) => {
+      if (doc.exists && doc.data().username) {
+        const name = doc.data().username;
+        welcomeElem.textContent = `Hello, ${name}!`;
+        localStorage.setItem('loggedInUser', name);
+      }
+    }).catch((err) => {
+      console.log("Firebase greeting fetch error:", err);
+    });
+  }
+}
+
 
   // 4. Section Toggle Logic (Dashboard Navigation)
   function openSection(title, iconClass, description) {
