@@ -467,7 +467,8 @@
 
     </style>
 </head>
-<body>
+
+    <body>
 
     <div class="container">
         
@@ -539,10 +540,18 @@
         </div>
     </div>
 
-   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
+  // Session Check
+  const loggedInUser = localStorage.getItem('loggedInUser');
+  const userEmail = localStorage.getItem('user_email');
+
+  if (!loggedInUser && !userEmail) {
+    window.location.href = 'index.html';
+  }
+
   // 1. Firebase Configuration Keys
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
@@ -560,20 +569,75 @@
   }
   const db = firebase.firestore();
 
-  // Global Attendance Data Holder
+  let studentProfile = {};
   let attendanceData = {};
+  let attendanceUnsubscribe = null;
 
-  // 3. Firebase Real-time Listener (Teacher update karega to yahan live dikhega)
-  db.collection("attendance").onSnapshot((snapshot) => {
-    attendanceData = {};
-    snapshot.forEach((doc) => {
-      attendanceData[doc.id] = doc.data(); // Month keys like "August 2026"
+  // 3. Initialize Portal
+  async function initAttendancePortal() {
+    await fetchStudentProfile();
+    setupAttendanceListener();
+  }
+
+  // Fetch Student Profile for Class and Identification
+  async function fetchStudentProfile() {
+    try {
+      const studentsRef = db.collection('students');
+      let querySnapshot = await studentsRef.where('name', '==', loggedInUser).get();
+      
+      if (querySnapshot.empty && userEmail) {
+        querySnapshot = await studentsRef.where('email', '==', userEmail).get();
+      }
+
+      if (!querySnapshot.empty) {
+        studentProfile = querySnapshot.docs[0].data();
+      }
+    } catch (err) {
+      console.log("Error fetching student profile:", err);
+    }
+  }
+
+  // 4. Firebase Real-time Listener (Logged-in Student Specific)
+  function setupAttendanceListener() {
+    if (attendanceUnsubscribe) attendanceUnsubscribe();
+
+    attendanceUnsubscribe = db.collection("attendance").onSnapshot((snapshot) => {
+      attendanceData = {};
+
+      let studentName = studentProfile.name || loggedInUser;
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const monthKey = data.month || doc.id;
+
+        // Filter attendance records specific to logged-in student
+        let isForStudent = (data.studentName === studentName) || 
+                           (data.studentEmail === userEmail) || 
+                           (data.studentId === studentProfile.rollNo) ||
+                           (!data.studentName && !data.studentEmail); // Fallback for general month doc
+
+        if (isForStudent) {
+          if (data.records) {
+            // If doc records directly belong to this student
+            let records = data.records;
+            if (records[studentName]) {
+              records = records[studentName];
+            }
+            attendanceData[monthKey] = {
+              month: monthKey,
+              records: records,
+              totalDays: data.totalDays || 30,
+              startDayOffset: data.startDayOffset || 0
+            };
+          }
+        }
+      });
+
+      initAttendanceView();
+    }, (error) => {
+      console.error("Firebase attendance error:", error);
     });
-
-    initAttendanceView();
-  }, (error) => {
-    console.error("Firebase attendance error:", error);
-  });
+  }
 
   function initAttendanceView() {
     const container = document.getElementById('attendanceStripsContainer');
@@ -765,8 +829,9 @@
       closeCalendarModal();
     }
   };
+
+  window.onload = initAttendancePortal;
 </script>
 
-    
 </body>
 </html>
