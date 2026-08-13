@@ -290,7 +290,8 @@
         }
     </style>
 </head>
-<body>
+
+    <body>
 
     <div class="container">
         <div class="top-bar">
@@ -343,7 +344,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Check Login Session and Connectivity with database.html / index.html
+        // Check Login Session
         const loggedInUser = localStorage.getItem('loggedInUser');
         const userEmail = localStorage.getItem('user_email');
 
@@ -351,7 +352,7 @@
             window.location.href = 'index.html';
         }
 
-        // Display user name immediately from local storage
+        // Display user name immediately
         document.getElementById('studentNameDisplay').innerText = loggedInUser;
 
         // Firebase Configuration
@@ -370,157 +371,206 @@
         }
         const db = firebase.firestore();
 
-        // Fetch Real Student Data and Top 5 Leaderboard from Firestore
-        async function loadStudentDataAndLeaderboard() {
-            try {
-                let studentClass = "12th";
-                let studentStream = "Science";
+        let currentStudentClass = "";
+        let currentStudentStream = "";
+        let leaderboardUnsubscribe = null;
+        let feedbackUnsubscribe = null;
 
+        // Initialize Page Data
+        async function initAchievementsPortal() {
+            await fetchStudentProfile();
+            setupRealtimeLeaderboard();
+            setupRealtimeFeedbacks();
+        }
+
+        // 1. Fetch Student Profile for Class and Stream
+        async function fetchStudentProfile() {
+            try {
                 const studentsRef = db.collection('students');
-                
                 let querySnapshot = await studentsRef.where('name', '==', loggedInUser).get();
+                
                 if (querySnapshot.empty && userEmail) {
                     querySnapshot = await studentsRef.where('email', '==', userEmail).get();
                 }
 
                 if (!querySnapshot.empty) {
                     const studentDoc = querySnapshot.docs[0].data();
-                    studentClass = studentDoc.class || studentClass;
-                    studentStream = studentDoc.stream || studentStream;
+                    currentStudentClass = studentDoc.class || studentDoc.classSection || "";
+                    currentStudentStream = studentDoc.stream || "";
                     const myRank = studentDoc.rank || 'N/A';
                     
-                    document.getElementById('classStreamDisplay').innerText = `${studentClass} - ${studentStream}`;
+                    document.getElementById('classStreamDisplay').innerText = `${currentStudentClass || 'N/A'} - ${currentStudentStream || 'General'}`;
                     document.getElementById('myRankPill').innerHTML = `<i class="fa-solid fa-ranking-star"></i> Rank #${myRank}`;
                 } else {
                     document.getElementById('classStreamDisplay').innerText = "Class Record Pending";
                     document.getElementById('myRankPill').innerHTML = `<i class="fa-solid fa-ranking-star"></i> Rank --`;
                 }
+            } catch (err) {
+                console.error("Error loading profile:", err);
+            }
+        }
 
-                const leaderboardContainer = document.getElementById('leaderboardListContainer');
+        // 2. Real-time Live Leaderboard Listener
+        function setupRealtimeLeaderboard() {
+            const leaderboardContainer = document.getElementById('leaderboardListContainer');
+
+            if (leaderboardUnsubscribe) leaderboardUnsubscribe();
+
+            leaderboardUnsubscribe = db.collection('students')
+                .onSnapshot((snapshot) => {
+                    if (snapshot.empty) {
+                        leaderboardContainer.innerHTML = `<div class="no-data">No leaderboard records updated yet.</div>`;
+                        return;
+                    }
+
+                    let studentsList = [];
+
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        let classMatch = !currentStudentClass || data.class === currentStudentClass || data.classSection === currentStudentClass;
+                        let streamMatch = !currentStudentStream || data.stream === currentStudentStream || data.stream === "General" || data.stream === "All";
+
+                        if (classMatch && streamMatch) {
+                            studentsList.push({
+                                id: doc.id,
+                                ...data
+                            });
+                        }
+                    });
+
+                    // Update logged in user's live rank if changed by teacher
+                    const meInList = studentsList.find(s => s.name === loggedInUser || s.email === userEmail);
+                    if (meInList && meInList.rank) {
+                        document.getElementById('myRankPill').innerHTML = `<i class="fa-solid fa-ranking-star"></i> Rank #${meInList.rank}`;
+                    }
+
+                    // Sort by rank or score
+                    studentsList.sort((a, b) => {
+                        let rA = parseInt(a.rank) || 999;
+                        let rB = parseInt(b.rank) || 999;
+                        return rA - rB;
+                    });
+
+                    const top5 = studentsList.slice(0, 5);
+
+                    if (top5.length === 0) {
+                        leaderboardContainer.innerHTML = `<div class="no-data">Aapki Class/Stream ke liye koi ranks upload nahi hui hai.</div>`;
+                        return;
+                    }
+
+                    renderLeaderboard(top5);
+                }, (err) => {
+                    console.error("Error in real-time leaderboard:", err);
+                    leaderboardContainer.innerHTML = `<div class="no-data">Unable to connect to database.</div>`;
+                });
+        }
+
+        function renderLeaderboard(top5List) {
+            const leaderboardContainer = document.getElementById('leaderboardListContainer');
+            leaderboardContainer.innerHTML = '';
+            let position = 1;
+
+            top5List.forEach(data => {
+                const isMe = (data.name === loggedInUser);
                 
-                const top5Query = await studentsRef
-                    .where('class', '==', studentClass)
-                    .where('stream', '==', studentStream)
-                    .orderBy('rank', 'asc')
-                    .limit(5)
-                    .get();
-
-                if (top5Query.empty) {
-                    leaderboardContainer.innerHTML = `<div class="no-data">No leaderboard records updated by teacher yet.</div>`;
-                    return;
+                let iconHtml = '';
+                let itemStyle = '';
+                
+                if (position === 1) {
+                    iconHtml = `<div class="rank-badge-icon rank-1"><i class="fa-solid fa-trophy"></i></div>`;
+                } else if (position === 2) {
+                    iconHtml = `<div class="rank-badge-icon rank-2"><i class="fa-solid fa-award"></i></div>`;
+                } else if (position === 3) {
+                    iconHtml = `<div class="rank-badge-icon rank-3"><i class="fa-solid fa-medal"></i></div>`;
+                } else {
+                    iconHtml = `<div class="rank-badge-icon">${position}</div>`;
                 }
 
-                leaderboardContainer.innerHTML = '';
-                let position = 1;
+                if (isMe) {
+                    itemStyle = `border-color: #38bdf8; background: rgba(56, 189, 248, 0.05);`;
+                }
 
-                top5Query.forEach(doc => {
-                    const data = doc.data();
-                    const isMe = (data.name === loggedInUser);
-                    
-                    let iconHtml = '';
-                    let itemStyle = '';
-                    
-                    if (position === 1) {
-                        iconHtml = `<div class="rank-badge-icon rank-1"><i class="fa-solid fa-trophy"></i></div>`;
-                    } else if (position === 2) {
-                        iconHtml = `<div class="rank-badge-icon rank-2"><i class="fa-solid fa-award"></i></div>`;
-                    } else if (position === 3) {
-                        iconHtml = `<div class="rank-badge-icon rank-3"><i class="fa-solid fa-medal"></i></div>`;
-                    } else {
-                        iconHtml = `<div class="rank-badge-icon">${position}</div>`;
-                    }
+                const displayName = isMe ? `${data.name} (You)` : data.name;
+                const scoreText = data.score ? `${data.score}%` : (data.marks ? `${data.marks} Marks` : `Rank #${data.rank || position}`);
 
-                    if (isMe) {
-                        itemStyle = `border-color: #38bdf8; background: rgba(56, 189, 248, 0.05);`;
-                    }
-
-                    const displayName = isMe ? `${data.name} (You)` : data.name;
-                    const scoreText = data.score ? `${data.score}%` : (data.marks ? `${data.marks} Marks` : `Rank #${data.rank || position}`);
-
-                    const itemHTML = `
-                        <div class="leaderboard-item" style="${itemStyle}">
-                            <div class="student-main">
-                                ${iconHtml}
-                                <div>
-                                    <div class="student-name-text">${displayName}</div>
-                                    <div class="student-meta-text">Roll No: ${data.rollNo || data.roll || 'N/A'}</div>
-                                </div>
+                const itemHTML = `
+                    <div class="leaderboard-item" style="${itemStyle}">
+                        <div class="student-main">
+                            ${iconHtml}
+                            <div>
+                                <div class="student-name-text">${displayName}</div>
+                                <div class="student-meta-text">Roll No: ${data.rollNo || data.roll || 'N/A'}</div>
                             </div>
-                            <div class="student-percentage">${scoreText}</div>
                         </div>
-                    `;
-                    leaderboardContainer.innerHTML += itemHTML;
-                    position++;
-                });
-
-            } catch (err) {
-                console.error("Error loading leaderboard:", err);
-                document.getElementById('leaderboardListContainer').innerHTML = `<div class="no-data">Teacher has not published ranks yet or database connecting...</div>`;
-            }
+                        <div class="student-percentage">${scoreText}</div>
+                    </div>
+                `;
+                leaderboardContainer.innerHTML += itemHTML;
+                position++;
+            });
         }
 
-        // Fetch Dynamic Teacher Feedbacks from Firestore
-        async function loadTeacherFeedbacks() {
+        // 3. Real-time Live Teacher Remarks Listener
+        function setupRealtimeFeedbacks() {
             const feedbackContainer = document.getElementById('feedbackContainer');
-            try {
-                const feedbackRef = db.collection('feedbacks');
-                const fbSnapshot = await feedbackRef.orderBy('timestamp', 'desc').get();
 
-                if (fbSnapshot.empty) {
-                    feedbackContainer.innerHTML = `<div class="no-data">No feedback or remarks posted by teachers yet.</div>`;
-                    return;
-                }
+            if (feedbackUnsubscribe) feedbackUnsubscribe();
 
-                feedbackContainer.innerHTML = '';
-                let count = 0;
-
-                fbSnapshot.forEach(doc => {
-                    const fb = doc.data();
-                    const isGeneral = fb.type === 'general' || fb.target === 'class' || !fb.targetUser;
-                    const isPersonalForMe = fb.targetUser === loggedInUser || fb.targetUser === userEmail;
-
-                    if (isGeneral || isPersonalForMe) {
-                        count++;
-                        const cardType = isPersonalForMe ? 'personal' : 'general';
-                        const headerTitle = isPersonalForMe ? 'Personal Remark' : (fb.title || 'Announcement');
-                        const iconClass = isPersonalForMe ? 'fa-solid fa-user-pen' : 'fa-solid fa-bullhorn';
-                        const teacherName = fb.teacherName || fb.teacher || 'Faculty Member';
-                        const visibilityText = isPersonalForMe ? 'Visible to: Only You' : 'Visible to: Class';
-
-                        const cardHTML = `
-                            <div class="feedback-card ${cardType}">
-                                <div>
-                                    <div class="feedback-card-header">
-                                        <span><i class="${iconClass}"></i> ${headerTitle}</span>
-                                        <span>${teacherName}</span>
-                                    </div>
-                                    <div class="feedback-card-body">
-                                        "${fb.message || fb.text || ''}"
-                                    </div>
-                                </div>
-                                <div style="font-size: 10px; color: #64748b; margin-top: 10px; border-top: 1px solid #334155; padding-top: 6px;">
-                                    ${visibilityText}
-                                </div>
-                            </div>
-                        `;
-                        feedbackContainer.innerHTML += cardHTML;
+            feedbackUnsubscribe = db.collection('feedbacks')
+                .onSnapshot((snapshot) => {
+                    if (snapshot.empty) {
+                        feedbackContainer.innerHTML = `<div class="no-data">No feedback or remarks posted by teachers yet.</div>`;
+                        return;
                     }
+
+                    feedbackContainer.innerHTML = '';
+                    let count = 0;
+
+                    snapshot.forEach(doc => {
+                        const fb = doc.data();
+                        const isGeneral = fb.type === 'general' || fb.target === 'class' || !fb.targetUser;
+                        const isPersonalForMe = fb.targetUser === loggedInUser || fb.targetUser === userEmail;
+
+                        if (isGeneral || isPersonalForMe) {
+                            count++;
+                            const cardType = isPersonalForMe ? 'personal' : 'general';
+                            const headerTitle = isPersonalForMe ? 'Personal Remark' : (fb.title || 'Announcement');
+                            const iconClass = isPersonalForMe ? 'fa-solid fa-user-pen' : 'fa-solid fa-bullhorn';
+                            const teacherName = fb.teacherName || fb.teacher || 'Faculty Member';
+                            const visibilityText = isPersonalForMe ? 'Visible to: Only You' : 'Visible to: Class';
+
+                            const cardHTML = `
+                                <div class="feedback-card ${cardType}">
+                                    <div>
+                                        <div class="feedback-card-header">
+                                            <span><i class="${iconClass}"></i> ${headerTitle}</span>
+                                            <span>${teacherName}</span>
+                                        </div>
+                                        <div class="feedback-card-body">
+                                            "${fb.message || fb.text || ''}"
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 10px; border-top: 1px solid #334155; padding-top: 6px;">
+                                        ${visibilityText}
+                                    </div>
+                                </div>
+                            `;
+                            feedbackContainer.innerHTML += cardHTML;
+                        }
+                    });
+
+                    if (count === 0) {
+                        feedbackContainer.innerHTML = `<div class="no-data">No active remarks for you currently.</div>`;
+                    }
+                }, (err) => {
+                    console.error("Error loading feedbacks:", err);
+                    feedbackContainer.innerHTML = `<div class="no-data">Feedback system ready. Waiting for teacher updates.</div>`;
                 });
-
-                if (count === 0) {
-                    feedbackContainer.innerHTML = `<div class="no-data">No active remarks for you currently.</div>`;
-                }
-
-            } catch (err) {
-                console.error("Error loading feedbacks:", err);
-                feedbackContainer.innerHTML = `<div class="no-data">Feedback system ready. Waiting for teacher updates.</div>`;
-            }
         }
 
-        // Run data loaders on page load
+        // Run portal setup on load
         window.onload = function() {
-            loadStudentDataAndLeaderboard();
-            loadTeacherFeedbacks();
+            initAchievementsPortal();
         };
     </script>
 </body>
