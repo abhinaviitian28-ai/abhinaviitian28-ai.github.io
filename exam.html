@@ -850,12 +850,48 @@
         let allSubjectsData = [];
         let allExamsData = [];
 
-        // Student Profile & Stream Data from localStorage
-        let studentClass = localStorage.getItem('studentClass') || localStorage.getItem('userClass') || 'All Classes';
-        let studentStream = localStorage.getItem('studentStream') || localStorage.getItem('userStream') || 'General';
+     // Student Profile Data from localStorage & Firebase
+let loggedInUser = localStorage.getItem('loggedInUser');
+let studentProfile = {};
 
-        // Initialization
-        async function initPortal() {
+// Initialization
+async function initPortal() {
+    if (!loggedInUser) {
+        const badge = document.getElementById('studentStreamDisplay');
+        if (badge) badge.innerText = "Please Login First";
+        return;
+    }
+
+    try {
+        // Firebase ki 'students' table se loggedInUser ka POORA data utha lo
+        const querySnapshot = await db.collection('students').where('name', '==', loggedInUser).get();
+        
+        if (!querySnapshot.empty) {
+            studentProfile = querySnapshot.docs[0].data();
+        }
+    } catch (err) {
+        console.log("Error loading full profile data:", err);
+    }
+
+    // Top bar par student ki class aur stream dikhane ke liye
+    const badge = document.getElementById('studentStreamDisplay');
+    if (badge) {
+        let cls = studentProfile.class || studentProfile.classSection;
+        let stm = studentProfile.stream;
+        
+        if (cls || stm) {
+            badge.innerText = `${cls || 'Class N/A'} (${stm || 'General'})`;
+        } else {
+            badge.innerText = "Profile Update Karein";
+        }
+    }
+    
+    // Baki data load karne ke functions
+    loadAnnouncementBar();
+    loadCategoriesFromFirebase();
+    loadExamsFromFirebase();
+}
+
             // Update profile badge display from localStorage
             document.getElementById('studentStreamDisplay').innerText = `${studentClass} (${studentStream})`;
             
