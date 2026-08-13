@@ -78,8 +78,6 @@
 </head>
 <body>
 
-  <div id="recaptcha-container"></div>
-
   <div class="bg-circle circle-1"></div>
   <div class="bg-circle circle-2"></div>
 
@@ -100,7 +98,6 @@
     </button>
   </div>
 
-
   <div class="portal-container" id="auth-block">
     
     <div id="login-section">
@@ -111,8 +108,8 @@
       </div>
 
       <div class="input-group">
-        <i class="fa-solid fa-phone icon-left"></i>
-        <input type="text" id="login-phone" placeholder="Phone Number / Username">
+        <i class="fa-solid fa-envelope icon-left"></i>
+        <input type="email" id="login-email" placeholder="Email Address">
       </div>
       <div class="input-group">
         <i class="fa-solid fa-lock icon-left"></i>
@@ -141,8 +138,8 @@
           <input type="text" id="reg-username" placeholder="Full Name (Username)">
         </div>
         <div class="input-group">
-          <i class="fa-solid fa-phone icon-left"></i>
-          <input type="tel" id="reg-phone" placeholder="10-Digit Mobile Number">
+          <i class="fa-solid fa-envelope icon-left"></i>
+          <input type="email" id="reg-email" placeholder="Email Address">
         </div>
         <div class="input-group">
           <i class="fa-solid fa-lock icon-left"></i>
@@ -150,44 +147,43 @@
           <i class="fa-solid fa-eye eye-btn" id="reg-eye" onclick="togglePassword('reg-pwd', 'reg-eye')"></i>
         </div>
         
-        <button class="btn-main" id="btn-signup-otp" onclick="sendSignupOTP(event)">Next: Send Real OTP <i class="fa-solid fa-comment-sms"></i></button>
+        <button class="btn-main" id="btn-signup-otp" onclick="sendSignupOTP(event)">Next: Send Email OTP <i class="fa-solid fa-paper-plane"></i></button>
         <div class="toggle-links" style="justify-content: center; margin-top:20px;">
           <span>Already have an account? <a onclick="switchSection('login-section')">Log in</a></span>
         </div>
       </div>
 
       <div id="otp-section">
-        <p style="font-size:13px; color:#38bdf8; margin-bottom:15px;">A real SMS OTP has been sent to your phone.</p>
+        <p style="font-size:13px; color:#38bdf8; margin-bottom:15px;">An OTP has been sent to your Email address.</p>
         <div class="input-group">
           <i class="fa-solid fa-key icon-left"></i>
-          <input type="number" id="reg-otp" placeholder="Enter 6-digit SMS OTP">
+          <input type="number" id="reg-otp" placeholder="Enter 6-digit Email OTP">
         </div>
         <button class="btn-main" onclick="verifyAndCreate()">Verify & Create Account</button>
         <button class="btn-main btn-alt" onclick="cancelOTP('signup-step-1', 'otp-section')">Back</button>
       </div>
     </div>
 
-
     <div id="forgot-section">
       <div class="auth-header">
         <h2>Reset Password</h2>
-        <p>Enter your phone number to get SMS OTP</p>
+        <p>Enter your registered Email to receive OTP</p>
       </div>
 
       <div id="forgot-step-1">
         <div class="input-group">
-          <i class="fa-solid fa-phone icon-left"></i>
-          <input type="tel" id="reset-phone" placeholder="10-Digit Registered Number">
+          <i class="fa-solid fa-envelope icon-left"></i>
+          <input type="email" id="reset-email" placeholder="Registered Email Address">
         </div>
-        <button class="btn-main" id="btn-forgot-otp" onclick="sendForgotOTP(event)">Send SMS OTP <i class="fa-solid fa-paper-plane"></i></button>
+        <button class="btn-main" id="btn-forgot-otp" onclick="sendForgotOTP(event)">Send Email OTP <i class="fa-solid fa-paper-plane"></i></button>
         <button class="btn-main btn-alt" onclick="switchSection('login-section')">Cancel</button>
       </div>
 
       <div id="forgot-otp-section">
-        <p style="font-size:13px; color:#38bdf8; margin-bottom:15px;">OTP sent! Enter it below with new password.</p>
+        <p style="font-size:13px; color:#38bdf8; margin-bottom:15px;">OTP sent! Check your email inbox or spam folder.</p>
         <div class="input-group">
           <i class="fa-solid fa-key icon-left"></i>
-          <input type="number" id="reset-otp" placeholder="Enter 6-digit SMS OTP">
+          <input type="number" id="reset-otp" placeholder="Enter 6-digit Email OTP">
         </div>
         <div class="input-group">
           <i class="fa-solid fa-lock icon-left"></i>
@@ -205,11 +201,22 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <script>
-  // 1. Firebase Configuration Keys
+  // 1. HARDCODED EMAILJS CREDENTIALS (FROM YOUR DASHBOARD PHOTOS)
+  const EMAILJS_PUBLIC_KEY = "a9bTH6r10HXOyjhXh";
+  const EMAILJS_SERVICE_ID = "service_1igu4qg";
+  const EMAILJS_TEMPLATE_ID = "template_jteag1i";
+
+  // Initialize EmailJS
+  (function(){
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  })();
+
+  // 2. Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -220,12 +227,40 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 2. Start Firebase Services
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   const db = firebase.firestore();
-  const auth = firebase.auth();
+
+  // Variables for storing generated OTPs in memory
+  let generatedSignupOTP = "";
+  let generatedResetOTP = "";
+
+  // 🔒 FIX BUG 1 & 2: Auto Session Check on Load & Back Button Glitch Prevention
+  function checkSessionAndGuard() {
+    if (localStorage.getItem('loggedInUser')) {
+      window.location.href = 'database.html';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    checkSessionAndGuard();
+
+    if (!localStorage.getItem('site_school_name')) {
+      localStorage.setItem('site_school_name', 'SSKL Agrawal Memorial Bal Vidhya Mandir');
+      localStorage.setItem('site_tagline', '"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"');
+    }
+    
+    const schoolNameElem = document.getElementById('display-school-name');
+    const taglineElem = document.getElementById('display-tagline');
+    if (schoolNameElem) schoolNameElem.textContent = localStorage.getItem('site_school_name');
+    if (taglineElem) taglineElem.textContent = localStorage.getItem('site_tagline');
+  });
+
+  // Guard when coming back via Browser Back button
+  window.addEventListener('pageshow', function(event) {
+    checkSessionAndGuard();
+  });
 
   // Toast Notification Bar
   function showToast(message, isError = true) {
@@ -244,29 +279,17 @@
     setTimeout(() => {
       toast.style.opacity = '0';
       setTimeout(() => { toast.remove(); }, 300);
-    }, 2000);
+    }, 2500);
   }
 
-  // Validation: Valid 10-Digit Indian Phone Number
-  function isValidIndianPhone(phoneStr) {
-    let clean = phoneStr.replace(/\D/g, '');
-    if (clean.length === 11 && clean.startsWith('0')) clean = clean.substring(1);
-    if (clean.length === 12 && clean.startsWith('91')) clean = clean.substring(2);
-    return /^[6-9]\d{9}$/.test(clean);
+  // Email Validation Helper
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  // Format Phone Number for Firebase (+91)
-  function formatPhone(phoneStr) {
-    let clean = phoneStr.replace(/\D/g, '');
-    if (clean.length === 11 && clean.startsWith('0')) clean = clean.substring(1);
-    if (clean.length === 12 && clean.startsWith('91')) clean = clean.substring(2);
-    if (clean.length === 10) return '+91' + clean;
-    return '+' + clean;
-  }
-
-  // ⏱️ COOL 45-SECOND COOLDOWN TIMER WITH GLOWING EFFECT
+  // ⏱️ Cool 45-Second Timer
   function startCooldown(buttonObj) {
-    let count = 45; // Set to 45 Seconds
+    let count = 45;
     const originalText = buttonObj.innerHTML;
     buttonObj.disabled = true;
     buttonObj.classList.add('btn-timer-running');
@@ -284,31 +307,7 @@
     }, 1000);
   }
 
-  // Recaptcha Verifier Initialization
-  function getRecaptchaVerifier() {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response) => {}
-      });
-    }
-    return window.recaptchaVerifier;
-  }
-
-  // System Defaults
-  document.addEventListener("DOMContentLoaded", function() {
-    if (!localStorage.getItem('site_school_name')) {
-      localStorage.setItem('site_school_name', 'SSKL Agrawal Memorial Bal Vidhya Mandir');
-      localStorage.setItem('site_tagline', '"Shiksha, Sanskar aur Ujjwal Bhavishya Ka Uttam Sangam"');
-    }
-    
-    const schoolNameElem = document.getElementById('display-school-name');
-    const taglineElem = document.getElementById('display-tagline');
-    if (schoolNameElem) schoolNameElem.textContent = localStorage.getItem('site_school_name');
-    if (taglineElem) taglineElem.textContent = localStorage.getItem('site_tagline');
-  });
-
-  // Navigation & Transitions
+  // Navigation Functions
   function goToAuth() {
     document.getElementById('entry-block').style.display = 'none';
     document.getElementById('auth-block').style.display = 'block';
@@ -327,7 +326,6 @@
     document.getElementById(sectionId).style.display = 'block';
   }
 
-  // Eye Icon (Hide/Show Password)
   function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
@@ -343,19 +341,19 @@
     }
   }
 
-  // Send Signup OTP
+  // 📧 SEND SIGNUP EMAIL OTP VIA EMAILJS
   function sendSignupOTP(event) {
     const user = document.getElementById('reg-username').value.trim();
-    const phoneInput = document.getElementById('reg-phone').value.trim();
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const pwd = document.getElementById('reg-pwd').value.trim();
 
-    if (!user || !phoneInput || !pwd) { 
+    if (!user || !email || !pwd) { 
       showToast("Please fill all details first!", true); 
       return; 
     }
 
-    if (!isValidIndianPhone(phoneInput)) {
-      showToast("❌ Please enter a valid 10-digit Mobile Number!", true);
+    if (!isValidEmail(email)) {
+      showToast("❌ Please enter a valid Email Address!", true);
       return;
     }
 
@@ -364,22 +362,39 @@
       return;
     }
 
-    const formattedPhone = formatPhone(phoneInput);
-    const appVerifier = getRecaptchaVerifier();
     const btn = event.currentTarget;
 
-    auth.signInWithPhoneNumber(formattedPhone, appVerifier)
-      .then((confirmationResult) => {
-        window.confirmationResult = confirmationResult;
-        showToast("📱 Real SMS OTP sent successfully!", false);
-        startCooldown(btn);
-        document.getElementById('signup-step-1').style.display = 'none';
-        document.getElementById('otp-section').style.display = 'block';
-      }).catch((error) => {
-        console.error("SMS Error:", error);
-        showToast("Error sending SMS OTP: " + error.message, true);
-        if (window.recaptchaVerifier) window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
-      });
+    // Check if email already registered in Firestore
+    db.collection("users").doc(email).get().then((doc) => {
+      if (doc.exists) {
+        showToast("❌ Account with this Email already exists! Please log in.", true);
+        return;
+      }
+
+      // Generate 6-Digit OTP
+      generatedSignupOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const templateParams = {
+        to_name: user,
+        to_email: email,
+        otp_code: generatedSignupOTP,
+        reply_to: email
+      };
+
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+        .then(function(response) {
+          showToast("📧 OTP sent to your Email successfully!", false);
+          startCooldown(btn);
+          document.getElementById('signup-step-1').style.display = 'none';
+          document.getElementById('otp-section').style.display = 'block';
+        }, function(error) {
+          console.error("EmailJS Error:", error);
+          showToast("❌ Failed to send Email OTP. Check EmailJS setup!", true);
+        });
+    }).catch((err) => {
+      console.error("Firestore Check Error:", err);
+      showToast("Database error: " + err.message, true);
+    });
   }
 
   function cancelOTP(step1, step2) {
@@ -387,63 +402,50 @@
     document.getElementById(step2).style.display = 'none';
   }
 
-  // Verify Signup OTP
+  // VERIFY SIGNUP OTP & SAVE TO FIRESTORE
   function verifyAndCreate() {
     const otp = document.getElementById('reg-otp').value.trim();
+    const user = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
+    const pwd = document.getElementById('reg-pwd').value.trim();
 
     if (!otp) {
       showToast("Please enter OTP!", true);
       return;
     }
 
-    if (!window.confirmationResult) {
-      showToast("Session expired! Please resend OTP.", true);
+    if (otp !== generatedSignupOTP) {
+      showToast("❌ Incorrect Email OTP! Check your inbox/spam.", true);
       return;
     }
 
-    window.confirmationResult.confirm(otp).then((result) => {
-      const username = document.getElementById('reg-username').value.trim();
-      const phoneInput = document.getElementById('reg-phone').value.trim();
-      const pwd = document.getElementById('reg-pwd').value.trim();
-      let cleanPhone = phoneInput.replace(/\D/g, '');
-      if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-      if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.substring(2);
+    db.collection("users").doc(email).set({
+      username: user,
+      email: email,
+      pwd: pwd,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      localStorage.setItem('loggedInUser', user);
+      localStorage.setItem('user_email', email);
 
-      db.collection("users").doc(cleanPhone).set({
-        username: username,
-        phone: cleanPhone,
-        pwd: pwd,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        localStorage.setItem('loggedInUser', username);
-        localStorage.setItem('user_phone', cleanPhone);
+      showToast("Account Created Successfully! Welcome", false);
 
-        showToast("Account Created Successfully! Welcome", false);
-
-        setTimeout(() => {
-          openDatabasePage();
-        }, 1500);
-      }).catch((error) => {
-        console.error("Firestore save error:", error);
-        showToast("Database error: " + error.message, true);
-      });
-
+      setTimeout(() => {
+        openDatabasePage();
+      }, 1500);
     }).catch((error) => {
-      console.error("OTP Verification Error:", error);
-      showToast("❌ Incorrect OTP! Please try again.", true);
+      console.error("Firestore save error:", error);
+      showToast("Database error: " + error.message, true);
     });
   }
 
-  // Handle Login
+  // LOGIN HANDLER
   function handleLogin() {
-    const phoneInput = document.getElementById('login-phone').value.trim();
+    const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
     const pwd = document.getElementById('login-pwd').value.trim();
-    let cleanPhone = phoneInput.replace(/\D/g, '');
-    if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.substring(2);
 
-    if (!phoneInput || !pwd) {
-      showToast("Please enter phone and password!", true);
+    if (!emailInput || !pwd) {
+      showToast("Please enter email and password!", true);
       return;
     }
     
@@ -458,12 +460,12 @@
       return;
     }
 
-    db.collection("users").doc(cleanPhone).get().then((doc) => {
+    db.collection("users").doc(emailInput).get().then((doc) => {
       if (doc.exists) {
         const userData = doc.data();
         if (userData.pwd === pwd) {
           localStorage.setItem('loggedInUser', userData.username || 'User');
-          localStorage.setItem('user_phone', cleanPhone);
+          localStorage.setItem('user_email', emailInput);
 
           showToast("Login Successful! Welcome to SS KanhaiyaLal Portal.", false);
 
@@ -482,49 +484,66 @@
     });
   }
 
-  // Send Forgot OTP
+  // 📧 SEND FORGOT PASSWORD EMAIL OTP
   function sendForgotOTP(event) {
-    const phoneInput = document.getElementById('reset-phone').value.trim();
-    if (!phoneInput) { 
-      showToast("Enter phone number first!", true); 
+    const email = document.getElementById('reset-email').value.trim().toLowerCase();
+    if (!email) { 
+      showToast("Enter registered Email first!", true); 
       return; 
     }
 
-    if (!isValidIndianPhone(phoneInput)) {
-      showToast("❌ Please enter a valid 10-digit Mobile Number!", true);
+    if (!isValidEmail(email)) {
+      showToast("❌ Please enter a valid Email Address!", true);
       return;
     }
 
-    const formattedPhone = formatPhone(phoneInput);
-    const appVerifier = getRecaptchaVerifier();
     const btn = event.currentTarget;
 
-    auth.signInWithPhoneNumber(formattedPhone, appVerifier)
-      .then((confirmationResult) => {
-        window.confirmationResult = confirmationResult;
-        showToast("📱 Reset SMS OTP sent successfully!", false);
-        startCooldown(btn);
-        document.getElementById('forgot-step-1').style.display = 'none';
-        document.getElementById('forgot-otp-section').style.display = 'block';
-      }).catch((error) => {
-        console.error("Forgot OTP Error:", error);
-        showToast("Error sending OTP: " + error.message, true);
-        if (window.recaptchaVerifier) window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
-      });
+    db.collection("users").doc(email).get().then((doc) => {
+      if (!doc.exists) {
+        showToast("❌ Account with this Email not found!", true);
+        return;
+      }
+
+      const userData = doc.data();
+      generatedResetOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const templateParams = {
+        to_name: userData.username || "User",
+        to_email: email,
+        otp_code: generatedResetOTP,
+        reply_to: email
+      };
+
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+        .then(function(response) {
+          showToast("📧 Reset OTP sent to your Email!", false);
+          startCooldown(btn);
+          document.getElementById('forgot-step-1').style.display = 'none';
+          document.getElementById('forgot-otp-section').style.display = 'block';
+        }, function(error) {
+          console.error("EmailJS Forgot OTP Error:", error);
+          showToast("❌ Failed to send OTP. Check EmailJS setup!", true);
+        });
+    }).catch((error) => {
+      console.error("Firestore Reset Error:", error);
+      showToast("Database error: " + error.message, true);
+    });
   }
 
-  // Reset Password
+  // CONFIRM RESET PASSWORD
   function resetPassword() {
-    const phoneInput = document.getElementById('reset-phone').value.trim();
+    const email = document.getElementById('reset-email').value.trim().toLowerCase();
     const otp = document.getElementById('reset-otp').value.trim();
     const newPwd = document.getElementById('new-pwd').value.trim();
     const confirmPwd = document.getElementById('confirm-pwd').value.trim();
-    
-    let cleanPhone = phoneInput.replace(/\D/g, '');
-    if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
-    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.substring(2);
 
     if (!otp) { showToast("Enter OTP!", true); return; }
+
+    if (otp !== generatedResetOTP) {
+      showToast("❌ Incorrect OTP! Check your email inbox.", true);
+      return;
+    }
     
     if (newPwd.length < 8) { 
       showToast("❌ New password must be at least 8 characters long!", true); 
@@ -533,27 +552,17 @@
     
     if (newPwd !== confirmPwd) { showToast("Passwords do not match!", true); return; }
 
-    if (!window.confirmationResult) {
-      showToast("Session expired! Please resend OTP.", true);
-      return;
-    }
+    db.collection("users").doc(email).update({
+      pwd: newPwd
+    }).then(() => {
+      showToast("Password Reset Successfully!", false);
 
-    window.confirmationResult.confirm(otp).then((result) => {
-      db.collection("users").doc(cleanPhone).update({
-        pwd: newPwd
-      }).then(() => {
-        showToast("Password Reset Successfully!", false);
-
-        setTimeout(() => { 
-          openDatabasePage();
-        }, 1500);
-      }).catch((error) => {
-        console.error("Reset password error:", error);
-        showToast("Error resetting password!", true);
-      });
+      setTimeout(() => { 
+        openDatabasePage();
+      }, 1500);
     }).catch((error) => {
-      console.error("OTP Reset Verification Error:", error);
-      showToast("❌ Incorrect OTP! Please try again.", true);
+      console.error("Reset password error:", error);
+      showToast("Error resetting password!", true);
     });
   }
 
