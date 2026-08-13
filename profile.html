@@ -500,227 +500,240 @@
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <script>
-      // 1. Firebase Configuration Keys
-      const firebaseConfig = {
-        apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
-        authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
-        projectId: "ss-kanhaiyalal-agrawal",
-        storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
-        messagingSenderId: "776171239833",
-        appId: "1:776171239833:web:39eea44420db97384b3b08",
-        measurementId: "G-TQKTRTKBEJ"
-      };
+<script>
+  // 1. Firebase Configuration Keys
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+    authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+    projectId: "ss-kanhaiyalal-agrawal",
+    storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+    messagingSenderId: "776171239833",
+    appId: "1:776171239833:web:39eea44420db97384b3b08",
+    measurementId: "G-TQKTRTKBEJ"
+  };
 
-      // 2. Start Firebase
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+  // 2. Start Firebase
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const db = firebase.firestore();
+
+  // Logged in user ka Email browser memory se nikalna
+  const loggedInEmail = localStorage.getItem('user_email');
+
+  // 3. Page open hote hi Firebase se Login User ka Data Fetch karna
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!loggedInEmail) {
+      alert("Please login first!");
+      window.location.href = "index.html";
+      return;
+    }
+    loadUserProfileFromFirebase();
+  });
+
+  // Browser Back Button Glitch Protection
+  window.addEventListener('pageshow', function(event) {
+    if (!localStorage.getItem('loggedInUser') || !localStorage.getItem('user_email')) {
+      window.location.href = "index.html";
+    }
+  });
+
+  function loadUserProfileFromFirebase() {
+    db.collection("users").doc(loggedInEmail).get().then((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        updateUI(
+          data.username || 'Student',
+          data.email || loggedInEmail,
+          data.rollNo || 'Not Set',
+          data.gender || 'Not Set',
+          data.studentClass || '10th',
+          data.section || 'A',
+          data.stream || 'General / All Subjects'
+        );
+      } else {
+        console.log("No user record found in Firebase for email:", loggedInEmail);
+        updateUI("User", loggedInEmail, "Not Set", "Not Set", "10th", "A", "General / All Subjects");
       }
-      const db = firebase.firestore();
+    }).catch((error) => {
+      console.error("Firebase profile fetch error:", error);
+      updateUI("User", loggedInEmail, "Not Set", "Not Set", "10th", "A", "General / All Subjects");
+    });
+  }
 
-      // Logged in user ka phone number browser memory se nikalna
-      const loggedInPhone = localStorage.getItem('user_phone');
+  function updateUI(name, email, roll, gender, cls, sec, stream) {
+    const displayElement = document.getElementById('displayUsername');
+    const avatarElement = document.getElementById('avatarInitial');
+    // Display Email ya Phone Element dono me se jo bhi aapke HTML me ho
+    const emailElement = document.getElementById('displayEmail') || document.getElementById('displayPhone');
 
-      // 3. Page open hote hi Firebase se Login User ka Data Fetch karna
-      window.addEventListener('DOMContentLoaded', () => {
-        if (!loggedInPhone) {
-          alert("Please login first!");
-          window.location.href = "index.html";
-          return;
-        }
-        loadUserProfileFromFirebase();
-      });
+    if (displayElement) displayElement.innerText = name;
+    if (avatarElement) avatarElement.innerText = name.charAt(0).toUpperCase();
+    if (emailElement) emailElement.innerText = email;
 
-      function loadUserProfileFromFirebase() {
-        db.collection("users").doc(loggedInPhone).get().then((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            updateUI(
-              data.username || 'Student',
-              data.phone || loggedInPhone,
-              data.rollNo || '1024',
-              data.gender || 'Male',
-              data.studentClass || '10th',
-              data.section || 'A',
-              data.stream || 'Science'
-            );
-          } else {
-            console.log("No user record found in Firebase for phone:", loggedInPhone);
-            updateUI("User", loggedInPhone, "Not Set", "Not Set", "10th", "A", "General");
-          }
-        }).catch((error) => {
-          console.error("Firebase profile fetch error:", error);
-          updateUI("User", loggedInPhone, "Not Set", "Not Set", "10th", "A", "General");
-        });
+    if (document.getElementById('displayRoll')) document.getElementById('displayRoll').innerText = roll;
+    if (document.getElementById('displayGender')) document.getElementById('displayGender').innerText = gender;
+    if (document.getElementById('displayClassSection')) document.getElementById('displayClassSection').innerText = `${cls} - ${sec}`;
+    if (document.getElementById('displayStream')) document.getElementById('displayStream').innerText = stream;
+
+    localStorage.setItem('loggedInUser', name);
+  }
+
+  // Dynamic Stream Options based on Class selection
+  function handleClassChange() {
+    const cls = document.getElementById('inputClass').value;
+    const streamSelect = document.getElementById('inputStream');
+    if (!streamSelect) return;
+    streamSelect.innerHTML = '';
+
+    if (cls === '11th' || cls === '12th') {
+      streamSelect.innerHTML = `
+        <option value="Science">Science</option>
+        <option value="Commerce">Commerce</option>
+        <option value="Arts">Arts</option>
+      `;
+    } else {
+      streamSelect.innerHTML = `
+        <option value="General / All Subjects">General / All Subjects</option>
+      `;
+    }
+  }
+
+  // Modal Show/Hide
+  function openDetailsModal() {
+    const roll = document.getElementById('displayRoll') ? document.getElementById('displayRoll').innerText : 'Not Set';
+    const gender = document.getElementById('displayGender') ? document.getElementById('displayGender').innerText : 'Male';
+    const classSecElem = document.getElementById('displayClassSection');
+    const classSec = classSecElem ? classSecElem.innerText.split(' - ') : ['10th', 'A'];
+
+    if (document.getElementById('inputRoll')) document.getElementById('inputRoll').value = (roll !== 'Not Set') ? roll : '';
+    if (document.getElementById('inputGender')) document.getElementById('inputGender').value = (gender === 'Female') ? 'Female' : 'Male';
+
+    if (classSec.length === 2) {
+      if (document.getElementById('inputClass')) document.getElementById('inputClass').value = classSec[0];
+      if (document.getElementById('inputSection')) document.getElementById('inputSection').value = classSec[1];
+    }
+
+    handleClassChange();
+    if (document.getElementById('detailsModal')) document.getElementById('detailsModal').style.display = 'flex';
+  }
+
+  function closeDetailsModal() {
+    if (document.getElementById('detailsModal')) document.getElementById('detailsModal').style.display = 'none';
+  }
+
+  // Save Student Details to Firebase
+  function saveDetailsToFirebase() {
+    const roll = parseInt(document.getElementById('inputRoll').value);
+    const gender = document.getElementById('inputGender').value;
+    const cls = document.getElementById('inputClass').value;
+    const sec = document.getElementById('inputSection').value;
+    const stream = document.getElementById('inputStream').value;
+
+    // Validation: Roll number between 1 and 150
+    if (isNaN(roll) || roll < 1 || roll > 150) {
+      alert("Please enter a valid Roll Number between 1 and 150!");
+      return;
+    }
+
+    if (!loggedInEmail) {
+      alert("User not logged in!");
+      return;
+    }
+
+    // Firebase Update using Email Document Reference
+    db.collection("users").doc(loggedInEmail).update({
+      rollNo: roll.toString(),
+      gender: gender,
+      studentClass: cls,
+      section: sec,
+      stream: stream,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      const currentUsername = document.getElementById('displayUsername').innerText;
+      updateUI(currentUsername, loggedInEmail, roll.toString(), gender, cls, sec, stream);
+      closeDetailsModal();
+      alert("✅ Student details updated successfully!");
+    }).catch((err) => {
+      console.error("Firebase update error:", err);
+      alert("Failed to update details in database!");
+    });
+  }
+
+  // Username Edit Functions
+  function toggleEditBox() {
+    const box = document.getElementById('editBox');
+    const errorMsg = document.getElementById('errorMsg');
+    if (!box) return;
+
+    if (box.style.display === 'block') {
+      box.style.display = 'none';
+    } else {
+      box.style.display = 'block';
+      if (document.getElementById('newUsername')) document.getElementById('newUsername').value = '';
+      if (document.getElementById('confirmUsername')) document.getElementById('confirmUsername').value = '';
+      if (errorMsg) errorMsg.style.display = 'none';
+    }
+  }
+
+  function saveUsername() {
+    const newName = document.getElementById('newUsername').value.trim();
+    const confirmName = document.getElementById('confirmUsername').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (newName === '' || confirmName === '') {
+      if (errorMsg) {
+        errorMsg.innerText = "Fields cannot be empty!";
+        errorMsg.style.display = 'block';
       }
+      return;
+    }
 
-      function updateUI(name, phone, roll, gender, cls, sec, stream) {
-        const displayElement = document.getElementById('displayUsername');
-        const avatarElement = document.getElementById('avatarInitial');
-        const phoneElement = document.getElementById('displayPhone');
-        
-        if (displayElement) displayElement.innerText = name;
-        if (avatarElement) avatarElement.innerText = name.charAt(0).toUpperCase();
-        if (phoneElement) phoneElement.innerText = phone;
-
-        document.getElementById('displayRoll').innerText = roll;
-        document.getElementById('displayGender').innerText = gender;
-        document.getElementById('displayClassSection').innerText = `${cls} - ${sec}`;
-        document.getElementById('displayStream').innerText = stream;
-
-        localStorage.setItem('loggedInUser', name);
+    if (newName !== confirmName) {
+      if (errorMsg) {
+        errorMsg.innerText = "Usernames do not match!";
+        errorMsg.style.display = 'block';
       }
+      return;
+    }
 
-      // Dynamic Stream Options based on Class selection
-      function handleClassChange() {
-        const cls = document.getElementById('inputClass').value;
-        const streamSelect = document.getElementById('inputStream');
-        streamSelect.innerHTML = '';
+    if (!loggedInEmail) {
+      alert("User not logged in!");
+      return;
+    }
 
-        if (cls === '11th' || cls === '12th') {
-          streamSelect.innerHTML = `
-            <option value="Science">Science</option>
-            <option value="Commerce">Commerce</option>
-            <option value="Arts">Arts</option>
-          `;
-        } else {
-          streamSelect.innerHTML = `
-            <option value="General / All Subjects">General / All Subjects</option>
-          `;
-        }
+    db.collection("users").doc(loggedInEmail).update({
+      username: newName,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      const roll = document.getElementById('displayRoll') ? document.getElementById('displayRoll').innerText : 'Not Set';
+      const gender = document.getElementById('displayGender') ? document.getElementById('displayGender').innerText : 'Not Set';
+      const classSecElem = document.getElementById('displayClassSection');
+      const classSec = classSecElem ? classSecElem.innerText.split(' - ') : ['10th', 'A'];
+      const stream = document.getElementById('displayStream') ? document.getElementById('displayStream').innerText : 'General / All Subjects';
+
+      updateUI(newName, loggedInEmail, roll, gender, classSec[0] || '10th', classSec[1] || 'A', stream);
+      toggleEditBox();
+      alert("✅ Username Firebase Database mein successfully update ho gaya!");
+    }).catch((error) => {
+      console.error("Database save error:", error);
+      if (errorMsg) {
+        errorMsg.innerText = "Failed to update database!";
+        errorMsg.style.display = 'block';
       }
+    });
+  }
 
-      // Modal Show/Hide
-      function openDetailsModal() {
-        const roll = document.getElementById('displayRoll').innerText;
-        const gender = document.getElementById('displayGender').innerText;
-        const classSec = document.getElementById('displayClassSection').innerText.split(' - ');
+  function logout() {
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_phone');
+    localStorage.removeItem('loggedInUser');
+    window.location.href = "index.html";
+  }
+</script>
 
-        document.getElementById('inputRoll').value = (roll !== 'Not Set') ? roll : '';
-        document.getElementById('inputGender').value = (gender === 'Female') ? 'Female' : 'Male';
-
-        if (classSec.length === 2) {
-          document.getElementById('inputClass').value = classSec[0];
-          document.getElementById('inputSection').value = classSec[1];
-        }
-
-        handleClassChange();
-        document.getElementById('detailsModal').style.display = 'flex';
-      }
-
-      function closeDetailsModal() {
-        document.getElementById('detailsModal').style.display = 'none';
-      }
-
-      // Save Student Details to Firebase
-      function saveDetailsToFirebase() {
-        const roll = parseInt(document.getElementById('inputRoll').value);
-        const gender = document.getElementById('inputGender').value;
-        const cls = document.getElementById('inputClass').value;
-        const sec = document.getElementById('inputSection').value;
-        const stream = document.getElementById('inputStream').value;
-
-        // Validation: Roll number between 1 and 150
-        if (isNaN(roll) || roll < 1 || roll > 150) {
-          alert("Please enter a valid Roll Number between 1 and 150!");
-          return;
-        }
-
-        if (!loggedInPhone) {
-          alert("User not logged in!");
-          return;
-        }
-
-        // Firebase Update
-        db.collection("users").doc(loggedInPhone).update({
-          rollNo: roll.toString(),
-          gender: gender,
-          studentClass: cls,
-          section: sec,
-          stream: stream,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-          const currentUsername = document.getElementById('displayUsername').innerText;
-          updateUI(currentUsername, loggedInPhone, roll.toString(), gender, cls, sec, stream);
-          closeDetailsModal();
-          alert("✅ Student details updated successfully!");
-        }).catch((err) => {
-          console.error("Firebase update error:", err);
-          alert("Failed to update details in database!");
-        });
-      }
-
-      // Username Edit Functions
-      function toggleEditBox() {
-        const box = document.getElementById('editBox');
-        const errorMsg = document.getElementById('errorMsg');
-        
-        if (box.style.display === 'block') {
-          box.style.display = 'none';
-        } else {
-          box.style.display = 'block';
-          document.getElementById('newUsername').value = '';
-          document.getElementById('confirmUsername').value = '';
-          if (errorMsg) errorMsg.style.display = 'none';
-        }
-      }
-
-      function saveUsername() {
-        const newName = document.getElementById('newUsername').value.trim();
-        const confirmName = document.getElementById('confirmUsername').value.trim();
-        const errorMsg = document.getElementById('errorMsg');
-
-        if (newName === '' || confirmName === '') {
-          if (errorMsg) {
-            errorMsg.innerText = "Fields cannot be empty!";
-            errorMsg.style.display = 'block';
-          }
-          return;
-        }
-
-        if (newName !== confirmName) {
-          if (errorMsg) {
-            errorMsg.innerText = "Usernames do not match!";
-            errorMsg.style.display = 'block';
-          }
-          return;
-        }
-
-        if (!loggedInPhone) {
-          alert("User not logged in!");
-          return;
-        }
-
-        db.collection("users").doc(loggedInPhone).update({
-          username: newName,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-          const roll = document.getElementById('displayRoll').innerText;
-          const gender = document.getElementById('displayGender').innerText;
-          const classSec = document.getElementById('displayClassSection').innerText.split(' - ');
-          const stream = document.getElementById('displayStream').innerText;
-
-          updateUI(newName, loggedInPhone, roll, gender, classSec[0] || '10th', classSec[1] || 'A', stream);
-          toggleEditBox();
-          alert("✅ Username Firebase Database mein successfully update ho gaya!");
-        }).catch((error) => {
-          console.error("Database save error:", error);
-          if (errorMsg) {
-            errorMsg.innerText = "Failed to update database!";
-            errorMsg.style.display = 'block';
-          }
-        });
-      }
-
-      function logout() {
-        localStorage.removeItem('user_phone');
-        localStorage.removeItem('loggedInUser');
-        window.location.href = "index.html";
-      }
-    </script>
-    
 </body>
 </html>
