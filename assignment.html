@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments - SS KanhaiyaLal Agrawal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Exact Notice Board Styles Copied & Scaled */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 15px; 
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 15px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 17px; 
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        .brand i {
+            background: rgba(56, 189, 248, 0.1);
+            padding: 8px; 
+            border-radius: 8px;
+            color: #38bdf8;
+            font-size: 16px;
+        }
+
+        .btn-dashboard {
+            background: #334155;
+            color: #f8fafc;
+            text-decoration: none;
+            padding: 7px 12px; 
+            border-radius: 8px;
+            font-size: 13px; 
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-dashboard:hover {
+            background: #475569;
+            color: #ffffff;
+        }
+
+        /* Controls Section (Search & Filters) */
+        .controls-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 10px 15px 10px 40px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: #38bdf8;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #334155;
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        /* Subject Color Dots */
+        .dot-urgent { background: #ef4444; }
+        .dot-exam { background: #38bdf8; }
+        .dot-holiday { background: #eab308; }
+        .dot-sports { background: #22c55e; }
+        .dot-bookmarks { background: #a855f7; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .empty-state i {
+            font-size: 42px;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* List Container */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Card Style */
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #475569;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            background: #0f172a;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .type-urgent { color: #ef4444; }
+        .type-exam { color: #38bdf8; }
+        .type-holiday { color: #eab308; }
+        .type-sports { color: #22c55e; }
+        .type-general { color: #a855f7; }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 4px;
+        }
+
+        .card-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-date {
+            background: #0f172a;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #cbd5e1;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .card-preview {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #334155;
+            padding-top: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .publisher-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .read-more {
+            color: #38bdf8;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            width: 100%;
+            max-width: 550px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-title-area h2 {
+            font-size: 18px;
+            color: #f8fafc;
+            margin-bottom: 6px;
+        }
+
+        .modal-meta-area {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .close-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 20px;
+            font-size: 14px;
+            color: #e2e8f0;
+            line-height: 1.6;
+            white-space: pre-line;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .modal-body::-webkit-scrollbar { width: 4px; }
+        .modal-body::-webkit-scrollbar-track { background: #0f172a; }
+        .modal-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+        .modal-footer {
+            padding: 15px 20px;
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-action {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            background: #1d4ed8;
+        }
+
+        @media (max-width: 600px) {
+            .card-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .card-date {
+                align-self: flex-start;
+            }
+            .modal-meta-area {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .brand { font-size: 15px; }
+            .btn-dashboard { font-size: 12px; padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="top-bar">
+            <div class="brand">
+                <i class="fa-solid fa-book-open"></i>
+                <span>Assignments</span>
+            </div>
+            <a href="database.html" class="btn-dashboard">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="controls-card">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search assignments by keyword..." onkeyup="handleSearch()">
+            </div>
+            
+            <div class="filters">
+                <button class="filter-btn active" onclick="setFilter('All', this)">All</button>
+                <button class="filter-btn" onclick="setFilter('Mathematics', this)"><span class="dot dot-urgent"></span> Mathematics</button>
+                <button class="filter-btn" onclick="setFilter('Science', this)"><span class="dot dot-exam"></span> Science</button>
+                <button class="filter-btn" onclick="setFilter('English', this)"><span class="dot dot-holiday"></span> English</button>
+                <button class="filter-btn" onclick="setFilter('Hindi', this)"><span class="dot dot-sports"></span> Hindi</button>
+                <button class="filter-btn" onclick="setFilter('Social Science', this)"><span class="dot dot-bookmarks"></span> SST</button>
+            </div>
+        </div>
+
+        <div class="list-container" id="assignmentsContainer">
+            </div>
+    </div>
+
+    <div class="modal-overlay" id="assignmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <h2 id="modalTitle">Assignment Title</h2>
+                    <div class="modal-meta-area">
+                        <span><i class="fa-solid fa-tag"></i> <span id="modalSubject">Subject</span></span>
+                        <span><i class="fa-solid fa-calendar"></i> Due: <span id="modalDate">Date</span></span>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                Instructions and assignment content will appear here...
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action" id="btnDownload" onclick="downloadAttachment()">
+                    <i class="fa-solid fa-paperclip"></i> Download Attachment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Check Login Session
+        const loggedInUser = localStorage.getItem('loggedInUser');
+        if (!loggedInUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+            authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+            projectId: "ss-kanhaiyalal-agrawal",
+            storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+            messagingSenderId: "776171239833",
+            appId: "1:776171239833:web:39eea44420db97384b3b08",
+            measurementId: "G-TQKTRTKBEJ"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // State Variables
+        let assignmentsData = [];
+        let currentFilter = "All";
+        let searchQuery = "";
+        let currentAttachmentUrl = "";
+
+        // UI Elements
+        const container = document.getElementById('assignmentsContainer');
+
+        // Fetch Data from Firestore (NO DUMMY DATA)
+        function loadAssignments() {
+            db.collection("assignments").get().then((snapshot) => {
+                let data = [];
+                snapshot.forEach(doc => {
+                    data.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Direct assignment, empty or not
+                assignmentsData = data;
+                renderList();
+            }).catch((error) => {
+                console.error("Firestore fetch error:", error);
+                // On error, show empty state
+                assignmentsData = [];
+                renderList();
+            });
+        }
+
+        // Handle Search
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            renderList();
+        }
+
+        // Handle Filter Button Clicks
+        function setFilter(subject, btnObj) {
+            currentFilter = subject;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnObj.classList.add('active');
+            renderList();
+        }
+
+        // Render Cards List
+        function renderList() {
+            container.innerHTML = "";
+
+            let filtered = assignmentsData.filter(item => {
+                let matchesSubject = (currentFilter === "All") || (item.subject === currentFilter);
+                let textToSearch = (item.title || '') + ' ' + (item.subject || '') + ' ' + (item.content || item.instructions || item.desc || '');
+                let matchesSearch = textToSearch.toLowerCase().includes(searchQuery);
+                return matchesSubject && matchesSearch;
+            });
+
+            // Clean Empty State Trigger (No Fake Data)
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-bell-slash"></i>
+                        <h3>No Assignments Published Yet</h3>
+                        <p>When teachers post new assignments, they will appear here automatically.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                let itemIcon = item.icon || "fa-book";
+                let itemColor = item.colorClass || "type-general";
+                let itemDot = item.dotClass || "dot-holiday";
+
+                if (item.subject === "Mathematics") { itemIcon = "fa-calculator"; itemColor = "type-urgent"; itemDot = "dot-urgent"; }
+                else if (item.subject === "Science") { itemIcon = "fa-flask"; itemColor = "type-exam"; itemDot = "dot-exam"; }
+                else if (item.subject === "English") { itemIcon = "fa-book-open"; itemColor = "type-holiday"; itemDot = "dot-holiday"; }
+                else if (item.subject === "Hindi") { itemIcon = "fa-language"; itemColor = "type-sports"; itemDot = "dot-sports"; }
+                else if (item.subject === "Social Science") { itemIcon = "fa-globe"; itemColor = "type-general"; itemDot = "dot-bookmarks"; }
+
+                let displayDate = item.date || item.dueDate || "N/A";
+                try { 
+                    if(displayDate !== "N/A") {
+                        displayDate = new Date(displayDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); 
+                    }
+                } catch(e){}
+
+                let mainContent = item.content || item.instructions || item.desc || "No extra instructions provided.";
+
+                const card = document.createElement('div');
+                card.className = "card";
+                card.onclick = () => openModal(item.id);
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <div class="card-icon ${itemColor}">
+                                <i class="fa-solid ${itemIcon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">${item.title || 'Assignment'}</h3>
+                                <div class="card-meta">
+                                    <span class="dot ${itemDot}"></span>
+                                    <span>${item.subject || 'General'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-date">
+                            Due: ${displayDate}
+                        </div>
+                    </div>
+                    <div class="card-preview">
+                        ${mainContent}
+                    </div>
+                    <div class="card-footer">
+                        <div class="publisher-info">
+                            <i class="fa-solid fa-user-pen"></i>
+                            <span>${item.teacher || 'Teacher'}</span>
+                        </div>
+                        <div class="read-more">
+                            View Details <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Modal Functions
+        function openModal(id) {
+            const item = assignmentsData.find(a => a.id === id);
+            if (!item) return;
+
+            let displayDate = item.date || item.dueDate || "N/A";
+            try { 
+                if(displayDate !== "N/A") {
+                    displayDate = new Date(displayDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); 
+                }
+            } catch(e){}
+
+            let mainContent = item.content || item.instructions || item.desc || "No extra instructions provided.";
+
+            document.getElementById('modalTitle').innerText = item.title || 'Assignment Details';
+            document.getElementById('modalSubject').innerText = item.subject || 'General';
+            document.getElementById('modalDate').innerText = displayDate;
+            document.getElementById('modalContent').innerText = mainContent;
+            
+            currentAttachmentUrl = item.attachmentUrl || item.fileUrl || "#";
+            document.getElementById('assignmentModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('assignmentModal').style.display = 'none';
+        }
+
+        // Close Modal when clicking outside the modal box
+        window.onclick = function(event) {
+            const modal = document.getElementById('assignmentModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        function downloadAttachment() {
+            if (currentAttachmentUrl && currentAttachmentUrl !== "#") {
+                window.open(currentAttachmentUrl, '_blank');
+            } else {
+                alert("No attachment file was provided by the teacher for this assignment.");
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener("DOMContentLoaded", loadAssignments);
+    </script>
+</body>
+</html>
