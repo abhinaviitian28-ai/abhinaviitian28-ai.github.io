@@ -86,6 +86,7 @@
     justify-content: center;
     border: 2px solid #60a5fa;
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    text-transform: uppercase;
 }
 
 .you-text {
@@ -93,8 +94,12 @@
     color: #cbd5e1;
     margin-top: 4px;
     font-weight: 600;
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
 }
-
 
     /* News Ticker - Clean and Fast */
     .news-ticker { 
@@ -116,7 +121,7 @@
       padding-bottom: 40px; 
     }
     
-    /* Zero-Lag Fast Cards (No Heavy Blur) */
+    /* Zero-Lag Fast Cards */
     .card { 
       background: rgba(255, 255, 255, 0.05); 
       border: 1px solid rgba(255, 255, 255, 0.12); 
@@ -126,7 +131,6 @@
       text-align: center; 
       display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; 
       
-      /* Instant & Smooth Hardware Accelerated transition */
       transition: transform 0.15s ease-out, background-color 0.15s ease-out, border-color 0.15s ease-out; 
       transform: translate3d(0, 0, 0);
     }
@@ -219,15 +223,15 @@
         </div>
     </div>
 
-    <a href="profile.html" class="profile-btn">
-        <div class="profile-avatar">A</div>
-        <span class="you-text">You</span>
+    <a href="profile.html" class="profile-btn" title="View Profile">
+        <div class="profile-avatar" id="avatarInitial">U</div>
+        <span class="you-text" id="userDisplayName">You</span>
     </a>
 </div>
 
   <div class="news-ticker">
     <i class="fa-solid fa-bolt"></i>
-    <marquee scrollamount="5">Welcome to 'SS KanhaiyaLal Agrawal Memorial Bal Vidhya Mandir Jalaun' Digital Portal • This website is designd by 'Abhinav Pandey.</marquee>
+    <marquee id="marqueeText" scrollamount="5">Welcome to 'SS KanhaiyaLal Agrawal Memorial Bal Vidhya Mandir Jalaun' Digital Portal • This website is designed by 'Abhinav Pandey'.</marquee>
   </div>
 
   <div class="container">
@@ -302,7 +306,15 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // 1. Firebase Configuration Keys
+  // 1. Session Protection Check
+  const loggedInUser = localStorage.getItem('loggedInUser');
+  const userEmail = localStorage.getItem('user_email');
+  
+  if (!loggedInUser && !userEmail) {
+    window.location.href = 'index.html';
+  }
+
+  // 2. Firebase Configuration Keys
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -313,47 +325,89 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 2. Start Firebase
+  // 3. Start Firebase
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   const db = firebase.firestore();
 
   let previousScrollPosition = 0;
+  let studentProfile = {};
 
-  // 3. Page open hote hi Firebase se dynamic Username fetch karna
+  // 4. Page Load Initialization
   document.addEventListener("DOMContentLoaded", function() {
-    loadUserGreeting();
+    initDashboard();
   });
 
-function loadUserGreeting() {
-  const savedEmail = localStorage.getItem('user_email');
-  const loggedInUser = localStorage.getItem('loggedInUser');
-  const welcomeElem = document.getElementById('welcome-text');
-
-  if (!welcomeElem) return;
-
-  // Fast Load: Agar browser memory me naam hai to dikha do
-  if (loggedInUser) {
-    welcomeElem.textContent = `Hello, ${loggedInUser}!`;
+  async function initDashboard() {
+    updateHeaderUserDisplay();
+    await fetchStudentProfile();
+    loadLiveAnnouncement();
   }
 
-  // Live Fetch: Firebase Firestore Database se Email ke zariye naam lekar aao
-  if (savedEmail) {
-    db.collection("users").doc(savedEmail).get().then((doc) => {
-      if (doc.exists && doc.data().username) {
-        const name = doc.data().username;
-        welcomeElem.textContent = `Hello, ${name}!`;
-        localStorage.setItem('loggedInUser', name);
+  // Update Top Profile Display Initial & Name Only
+  function updateHeaderUserDisplay() {
+    const avatarElem = document.getElementById('avatarInitial');
+    const nameElem = document.getElementById('userDisplayName');
+
+    let displayName = loggedInUser || 'Student';
+
+    if (avatarElem) {
+      avatarElem.innerText = displayName.charAt(0).toUpperCase();
+    }
+    if (nameElem) {
+      nameElem.innerText = displayName;
+    }
+  }
+
+  // Fetch Full Profile from Firebase
+  async function fetchStudentProfile() {
+    if (!loggedInUser && !userEmail) return;
+
+    try {
+      const studentsRef = db.collection('students');
+      let querySnapshot = await studentsRef.where('name', '==', loggedInUser).get();
+      
+      if (querySnapshot.empty && userEmail) {
+        querySnapshot = await studentsRef.where('email', '==', userEmail).get();
       }
-    }).catch((err) => {
-      console.log("Firebase greeting fetch error:", err);
+
+      if (!querySnapshot.empty) {
+        studentProfile = querySnapshot.docs[0].data();
+        let name = studentProfile.name || loggedInUser;
+
+        const nameElem = document.getElementById('userDisplayName');
+        const avatarElem = document.getElementById('avatarInitial');
+
+        // Avatar ke niche KEWAL NAAM dikhane ke liye:
+        if (nameElem) {
+          nameElem.innerText = name;
+        }
+        if (avatarElem) {
+          avatarElem.innerText = name.charAt(0).toUpperCase();
+        }
+      }
+    } catch (err) {
+      console.log("Error loading profile details for dashboard:", err);
+    }
+  }
+
+  // Fetch Latest Live Announcement for Marquee Ticker
+  function loadLiveAnnouncement() {
+    db.collection('notices').orderBy('createdAt', 'desc').limit(1).onSnapshot((snapshot) => {
+      if (!snapshot.empty) {
+        const latestNotice = snapshot.docs[0].data();
+        const marquee = document.getElementById('marqueeText');
+        if (marquee && latestNotice.title) {
+          marquee.innerText = `📢 LATEST NOTICE: ${latestNotice.title} • ${latestNotice.description || ''} • SS KanhaiyaLal Agrawal Memorial Bal Vidhya Mandir Jalaun`;
+        }
+      }
+    }, (err) => {
+      console.log("Marquee announcement load error:", err);
     });
   }
-}
 
-
-  // 4. Section Toggle Logic (Dashboard Navigation)
+  // 5. Section Toggle Logic
   function openSection(title, iconClass, description) {
     previousScrollPosition = window.scrollY || document.documentElement.scrollTop;
     
