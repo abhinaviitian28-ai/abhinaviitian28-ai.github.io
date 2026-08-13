@@ -855,50 +855,6 @@ let loggedInUser = localStorage.getItem('loggedInUser');
 let studentProfile = {};
 
 // Initialization
-async function initPortal() {
-    if (!loggedInUser) {
-        const badge = document.getElementById('studentStreamDisplay');
-        if (badge) badge.innerText = "Please Login First";
-        return;
-    }
-
-    try {
-        // Firebase ki 'students' table se loggedInUser ka POORA data utha lo
-        const querySnapshot = await db.collection('students').where('name', '==', loggedInUser).get();
-        
-        if (!querySnapshot.empty) {
-            studentProfile = querySnapshot.docs[0].data();
-        }
-    } catch (err) {
-        console.log("Error loading full profile data:", err);
-    }
-
-    // Top bar par student ki class aur stream dikhane ke liye
-    const badge = document.getElementById('studentStreamDisplay');
-    if (badge) {
-        let cls = studentProfile.class || studentProfile.classSection;
-        let stm = studentProfile.stream;
-        
-        if (cls || stm) {
-            badge.innerText = `${cls || 'Class N/A'} (${stm || 'General'})`;
-        } else {
-            badge.innerText = "Profile Update Karein";
-        }
-    }
-    
-    // Baki data load karne ke functions
-    loadAnnouncementBar();
-    loadCategoriesFromFirebase();
-    loadExamsFromFirebase();
-}
-
-            // Update profile badge display from localStorage
-            document.getElementById('studentStreamDisplay').innerText = `${studentClass} (${studentStream})`;
-            
-            loadAnnouncementBar();
-            loadCategoriesFromFirebase();
-            loadExamsFromFirebase();
-        }
 
         async function loadAnnouncementBar() {
             try {
@@ -910,6 +866,50 @@ async function initPortal() {
                 console.log("No announcement banner found in DB.");
             }
         }
+async function initPortal() {
+    const badge = document.getElementById('studentStreamDisplay');
+    
+    // 1. Agar user logged in nahi hai
+    if (!loggedInUser) {
+        if (badge) badge.innerText = "Please Login First";
+        loadAnnouncementBar();
+        loadCategoriesFromFirebase();
+        loadExamsFromFirebase();
+        return;
+    }
+
+    // 2. Pehle direct naam dikhao taaki loading na atke
+    if (badge) badge.innerText = loggedInUser;
+
+    try {
+        // Firebase se student ki profile, class aur stream fetch karo
+        const querySnapshot = await db.collection('students').where('name', '==', loggedInUser).get();
+        
+        if (!querySnapshot.empty) {
+            studentProfile = querySnapshot.docs[0].data();
+            let cls = studentProfile.class || studentProfile.classSection || "";
+            let stm = studentProfile.stream || "";
+
+            if (badge) {
+                if (cls || stm) {
+                    badge.innerText = `${cls} (${stm})`;
+                } else {
+                    badge.innerText = `${loggedInUser} (Profile Incomplete)`;
+                }
+            }
+        } else {
+            if (badge) badge.innerText = `${loggedInUser} (Student)`;
+        }
+    } catch (err) {
+        console.log("Error loading profile:", err);
+        if (badge) badge.innerText = loggedInUser;
+    }
+
+    // Baki sabhi sections load karne ke functions
+    loadAnnouncementBar();
+    loadCategoriesFromFirebase();
+    loadExamsFromFirebase();
+}
 
         // Navigation
         function openMainHub(hubName) {
