@@ -40,7 +40,23 @@
     .btn-alt { background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: none; margin-top: 10px; }
     .btn-alt:hover { background: rgba(255, 255, 255, 0.1); }
 
-    /* Auth Sections (Login/Signup) Styles */
+    /* COOL TIMER GLOW EFFECT */
+    @keyframes timerGlow {
+      0% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.4); border-color: rgba(56, 189, 248, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.8); border-color: #38bdf8; }
+      100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.4); border-color: rgba(56, 189, 248, 0.5); }
+    }
+
+    .btn-timer-running {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border: 1.5px solid #38bdf8 !important;
+      color: #38bdf8 !important;
+      animation: timerGlow 1.5s infinite ease-in-out;
+      cursor: not-allowed !important;
+      letter-spacing: 0.5px;
+    }
+
+    /* Auth Sections Styles */
     .auth-header { margin-bottom: 25px; }
     .auth-header h2 { font-size: 22px; margin-bottom: 5px; }
     .auth-header p { font-size: 13px; color: #cbd5e1; }
@@ -126,7 +142,7 @@
         </div>
         <div class="input-group">
           <i class="fa-solid fa-phone icon-left"></i>
-          <input type="tel" id="reg-phone" placeholder="Phone Number (e.g. 9876543210)">
+          <input type="tel" id="reg-phone" placeholder="10-Digit Mobile Number">
         </div>
         <div class="input-group">
           <i class="fa-solid fa-lock icon-left"></i>
@@ -134,7 +150,7 @@
           <i class="fa-solid fa-eye eye-btn" id="reg-eye" onclick="togglePassword('reg-pwd', 'reg-eye')"></i>
         </div>
         
-        <button class="btn-main" onclick="sendSignupOTP()">Next: Send Real OTP <i class="fa-solid fa-comment-sms"></i></button>
+        <button class="btn-main" id="btn-signup-otp" onclick="sendSignupOTP(event)">Next: Send Real OTP <i class="fa-solid fa-comment-sms"></i></button>
         <div class="toggle-links" style="justify-content: center; margin-top:20px;">
           <span>Already have an account? <a onclick="switchSection('login-section')">Log in</a></span>
         </div>
@@ -161,9 +177,9 @@
       <div id="forgot-step-1">
         <div class="input-group">
           <i class="fa-solid fa-phone icon-left"></i>
-          <input type="tel" id="reset-phone" placeholder="Registered Phone Number">
+          <input type="tel" id="reset-phone" placeholder="10-Digit Registered Number">
         </div>
-        <button class="btn-main" onclick="sendForgotOTP()">Send SMS OTP <i class="fa-solid fa-paper-plane"></i></button>
+        <button class="btn-main" id="btn-forgot-otp" onclick="sendForgotOTP(event)">Send SMS OTP <i class="fa-solid fa-paper-plane"></i></button>
         <button class="btn-main btn-alt" onclick="switchSection('login-section')">Cancel</button>
       </div>
 
@@ -188,9 +204,9 @@
 
   </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
 <script>
   // 1. Firebase Configuration Keys
@@ -204,14 +220,14 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 2. Start Firebase & Services
+  // 2. Start Firebase Services
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   const db = firebase.firestore();
   const auth = firebase.auth();
 
-  // Notification Toast Bar (Red for Error, Green for Success - 2 sec auto remove)
+  // Toast Notification Bar
   function showToast(message, isError = true) {
     const existing = document.getElementById('custom-toast-msg');
     if (existing) existing.remove();
@@ -231,12 +247,41 @@
     }, 2000);
   }
 
-  // Format Phone Number to E.164 Standard (+91...)
+  // Validation: Valid 10-Digit Indian Phone Number
+  function isValidIndianPhone(phoneStr) {
+    let clean = phoneStr.replace(/\D/g, '');
+    if (clean.length === 11 && clean.startsWith('0')) clean = clean.substring(1);
+    if (clean.length === 12 && clean.startsWith('91')) clean = clean.substring(2);
+    return /^[6-9]\d{9}$/.test(clean);
+  }
+
+  // Format Phone Number for Firebase (+91)
   function formatPhone(phoneStr) {
     let clean = phoneStr.replace(/\D/g, '');
+    if (clean.length === 11 && clean.startsWith('0')) clean = clean.substring(1);
+    if (clean.length === 12 && clean.startsWith('91')) clean = clean.substring(2);
     if (clean.length === 10) return '+91' + clean;
-    if (!phoneStr.startsWith('+')) return '+' + clean;
-    return phoneStr;
+    return '+' + clean;
+  }
+
+  // ⏱️ COOL 45-SECOND COOLDOWN TIMER WITH GLOWING EFFECT
+  function startCooldown(buttonObj) {
+    let count = 45; // Set to 45 Seconds
+    const originalText = buttonObj.innerHTML;
+    buttonObj.disabled = true;
+    buttonObj.classList.add('btn-timer-running');
+
+    const timer = setInterval(() => {
+      buttonObj.innerHTML = `<i class="fa-solid fa-hourglass-half fa-spin"></i> Resend OTP in <b>${count}s</b>`;
+      count--;
+
+      if (count < 0) {
+        clearInterval(timer);
+        buttonObj.disabled = false;
+        buttonObj.classList.remove('btn-timer-running');
+        buttonObj.innerHTML = originalText;
+      }
+    }, 1000);
   }
 
   // Recaptcha Verifier Initialization
@@ -250,7 +295,7 @@
     return window.recaptchaVerifier;
   }
 
-  // System Default Logic
+  // System Defaults
   document.addEventListener("DOMContentLoaded", function() {
     if (!localStorage.getItem('site_school_name')) {
       localStorage.setItem('site_school_name', 'SSKL Agrawal Memorial Bal Vidhya Mandir');
@@ -263,7 +308,7 @@
     if (taglineElem) taglineElem.textContent = localStorage.getItem('site_tagline');
   });
 
-  // 1. Navigation & Transitions
+  // Navigation & Transitions
   function goToAuth() {
     document.getElementById('entry-block').style.display = 'none';
     document.getElementById('auth-block').style.display = 'block';
@@ -282,7 +327,7 @@
     document.getElementById(sectionId).style.display = 'block';
   }
 
-  // 2. Eye Icon (Hide/Show Password)
+  // Eye Icon (Hide/Show Password)
   function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(iconId);
@@ -298,8 +343,8 @@
     }
   }
 
-  // 3. FIREBASE REAL PHONE AUTH: Send Signup OTP
-  function sendSignupOTP() {
+  // Send Signup OTP
+  function sendSignupOTP(event) {
     const user = document.getElementById('reg-username').value.trim();
     const phoneInput = document.getElementById('reg-phone').value.trim();
     const pwd = document.getElementById('reg-pwd').value.trim();
@@ -309,7 +354,11 @@
       return; 
     }
 
-    // 🔒 8-character password validation
+    if (!isValidIndianPhone(phoneInput)) {
+      showToast("❌ Please enter a valid 10-digit Mobile Number!", true);
+      return;
+    }
+
     if (pwd.length < 8) {
       showToast("❌ Password must be at least 8 characters long!", true);
       return;
@@ -317,11 +366,13 @@
 
     const formattedPhone = formatPhone(phoneInput);
     const appVerifier = getRecaptchaVerifier();
+    const btn = event.currentTarget;
 
     auth.signInWithPhoneNumber(formattedPhone, appVerifier)
       .then((confirmationResult) => {
         window.confirmationResult = confirmationResult;
         showToast("📱 Real SMS OTP sent successfully!", false);
+        startCooldown(btn);
         document.getElementById('signup-step-1').style.display = 'none';
         document.getElementById('otp-section').style.display = 'block';
       }).catch((error) => {
@@ -336,7 +387,7 @@
     document.getElementById(step2).style.display = 'none';
   }
 
-  // 🔥 FIREBASE REAL OTP VERIFY: Account Creation
+  // Verify Signup OTP
   function verifyAndCreate() {
     const otp = document.getElementById('reg-otp').value.trim();
 
@@ -350,14 +401,14 @@
       return;
     }
 
-    // Real Firebase OTP Verification
     window.confirmationResult.confirm(otp).then((result) => {
       const username = document.getElementById('reg-username').value.trim();
       const phoneInput = document.getElementById('reg-phone').value.trim();
       const pwd = document.getElementById('reg-pwd').value.trim();
-      const cleanPhone = phoneInput.replace(/\D/g, '');
+      let cleanPhone = phoneInput.replace(/\D/g, '');
+      if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+      if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.substring(2);
 
-      // Firebase Firestore me User Data Save karna
       db.collection("users").doc(cleanPhone).set({
         username: username,
         phone: cleanPhone,
@@ -379,16 +430,17 @@
 
     }).catch((error) => {
       console.error("OTP Verification Error:", error);
-      // 🚨 Top Red Patti for Incorrect OTP (Auto vanishes in 2 sec)
       showToast("❌ Incorrect OTP! Please try again.", true);
     });
   }
 
-    // 🔥 FIREBASE INTEGRATED: Login Logic
+  // Handle Login
   function handleLogin() {
     const phoneInput = document.getElementById('login-phone').value.trim();
     const pwd = document.getElementById('login-pwd').value.trim();
-    const cleanPhone = phoneInput.replace(/\D/g, '');
+    let cleanPhone = phoneInput.replace(/\D/g, '');
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.substring(2);
 
     if (!phoneInput || !pwd) {
       showToast("Please enter phone and password!", true);
@@ -406,7 +458,6 @@
       return;
     }
 
-    // NORMAL USER FIREBASE DATABASE CHECK
     db.collection("users").doc(cleanPhone).get().then((doc) => {
       if (doc.exists) {
         const userData = doc.data();
@@ -431,21 +482,28 @@
     });
   }
 
-  // 5. FIREBASE REAL PHONE AUTH: Send Forgot OTP
-  function sendForgotOTP() {
+  // Send Forgot OTP
+  function sendForgotOTP(event) {
     const phoneInput = document.getElementById('reset-phone').value.trim();
     if (!phoneInput) { 
       showToast("Enter phone number first!", true); 
       return; 
     }
 
+    if (!isValidIndianPhone(phoneInput)) {
+      showToast("❌ Please enter a valid 10-digit Mobile Number!", true);
+      return;
+    }
+
     const formattedPhone = formatPhone(phoneInput);
     const appVerifier = getRecaptchaVerifier();
+    const btn = event.currentTarget;
 
     auth.signInWithPhoneNumber(formattedPhone, appVerifier)
       .then((confirmationResult) => {
         window.confirmationResult = confirmationResult;
         showToast("📱 Reset SMS OTP sent successfully!", false);
+        startCooldown(btn);
         document.getElementById('forgot-step-1').style.display = 'none';
         document.getElementById('forgot-otp-section').style.display = 'block';
       }).catch((error) => {
@@ -455,17 +513,19 @@
       });
   }
 
-  // 🔥 FIREBASE REAL OTP VERIFY: Reset Password
+  // Reset Password
   function resetPassword() {
     const phoneInput = document.getElementById('reset-phone').value.trim();
     const otp = document.getElementById('reset-otp').value.trim();
     const newPwd = document.getElementById('new-pwd').value.trim();
     const confirmPwd = document.getElementById('confirm-pwd').value.trim();
-    const cleanPhone = phoneInput.replace(/\D/g, '');
+    
+    let cleanPhone = phoneInput.replace(/\D/g, '');
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) cleanPhone = cleanPhone.substring(2);
 
     if (!otp) { showToast("Enter OTP!", true); return; }
     
-    // 🔒 8-character password validation for reset
     if (newPwd.length < 8) { 
       showToast("❌ New password must be at least 8 characters long!", true); 
       return; 
@@ -478,9 +538,7 @@
       return;
     }
 
-    // Verify Real OTP via Firebase
     window.confirmationResult.confirm(otp).then((result) => {
-      // Update password in Firestore
       db.collection("users").doc(cleanPhone).update({
         pwd: newPwd
       }).then(() => {
@@ -495,7 +553,6 @@
       });
     }).catch((error) => {
       console.error("OTP Reset Verification Error:", error);
-      // 🚨 Top Red Patti for Incorrect OTP
       showToast("❌ Incorrect OTP! Please try again.", true);
     });
   }
