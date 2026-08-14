@@ -200,13 +200,13 @@
 
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <script>
-  // 1. HARDCODED EMAILJS CREDENTIALS (FROM YOUR DASHBOARD PHOTOS)
+  // 1. EMAILJS CREDENTIALS
   const EMAILJS_PUBLIC_KEY = "a9bTH6r10HXOyjhXh";
   const EMAILJS_SERVICE_ID = "service_1igu4qg";
   const EMAILJS_TEMPLATE_ID = "template_jteag1i";
@@ -232,14 +232,19 @@
   }
   const db = firebase.firestore();
 
-  // Variables for storing generated OTPs in memory
   let generatedSignupOTP = "";
   let generatedResetOTP = "";
 
-  // 🔒 FIX BUG 1 & 2: Auto Session Check on Load & Back Button Glitch Prevention
+  // 🔒 Smart Session & Role Guard
   function checkSessionAndGuard() {
-    if (localStorage.getItem('loggedInUser')) {
-      window.location.href = 'database.html';
+    const user = localStorage.getItem('loggedInUser');
+    const role = localStorage.getItem('user_role');
+    if (user) {
+      if (role === 'teacher') {
+        window.location.href = 'teacher_dashboard.html';
+      } else {
+        window.location.href = 'database.html';
+      }
     }
   }
 
@@ -257,12 +262,11 @@
     if (taglineElem) taglineElem.textContent = localStorage.getItem('site_tagline');
   });
 
-  // Guard when coming back via Browser Back button
   window.addEventListener('pageshow', function(event) {
     checkSessionAndGuard();
   });
 
-  // Toast Notification Bar
+  // Dynamic Toast Notification with Electric Blue Glow
   function showToast(message, isError = true) {
     const existing = document.getElementById('custom-toast-msg');
     if (existing) existing.remove();
@@ -271,8 +275,10 @@
     toast.id = 'custom-toast-msg';
     toast.innerText = message;
     
-    const bgColor = isError ? "#ef4444" : "#10b981";
-    toast.style.cssText = `position:fixed; top:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:12px 24px; border-radius:8px; z-index:99999; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-family: sans-serif; font-size:14px; text-align:center; transition: all 0.3s ease;`;
+    const bgColor = isError ? "#ef4444" : "#0284c7";
+    const borderColor = isError ? "rgba(239, 68, 68, 0.5)" : "rgba(56, 189, 248, 0.6)";
+    
+    toast.style.cssText = `position:fixed; top:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:12px 24px; border-radius:10px; border:1px solid ${borderColor}; z-index:99999; font-weight:600; box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 15px ${borderColor}; font-family: sans-serif; font-size:14px; text-align:center; transition: all 0.3s ease;`;
     
     document.body.appendChild(toast);
 
@@ -282,17 +288,15 @@
     }, 2500);
   }
 
-  // Email Validation Helper
   function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  // ⏱️ Cool 45-Second Timer
+  // ⏱️ Cooldown Timer
   function startCooldown(buttonObj) {
     let count = 45;
     const originalText = buttonObj.innerHTML;
     buttonObj.disabled = true;
-    buttonObj.classList.add('btn-timer-running');
 
     const timer = setInterval(() => {
       buttonObj.innerHTML = `<i class="fa-solid fa-hourglass-half fa-spin"></i> Resend OTP in <b>${count}s</b>`;
@@ -301,7 +305,6 @@
       if (count < 0) {
         clearInterval(timer);
         buttonObj.disabled = false;
-        buttonObj.classList.remove('btn-timer-running');
         buttonObj.innerHTML = originalText;
       }
     }, 1000);
@@ -341,7 +344,7 @@
     }
   }
 
-  // 📧 SEND SIGNUP EMAIL OTP VIA EMAILJS
+  // 📧 SEND SIGNUP EMAIL OTP
   function sendSignupOTP(event) {
     const user = document.getElementById('reg-username').value.trim();
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
@@ -364,14 +367,12 @@
 
     const btn = event.currentTarget;
 
-    // Check if email already registered in Firestore
     db.collection("users").doc(email).get().then((doc) => {
       if (doc.exists) {
-        showToast("❌ Account with this Email already exists! Please log in.", true);
+        showToast("❌ Account with this Email already exists!", true);
         return;
       }
 
-      // Generate 6-Digit OTP
       generatedSignupOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
       const templateParams = {
@@ -383,13 +384,13 @@
 
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
         .then(function(response) {
-          showToast("📧 OTP sent to your Email successfully!", false);
+          showToast("📧 Verify Your Email - OTP Sent!", false);
           startCooldown(btn);
           document.getElementById('signup-step-1').style.display = 'none';
           document.getElementById('otp-section').style.display = 'block';
         }, function(error) {
           console.error("EmailJS Error:", error);
-          showToast("❌ Failed to send Email OTP. Check EmailJS setup!", true);
+          showToast("❌ Failed to send OTP. Check EmailJS setup!", true);
         });
     }).catch((err) => {
       console.error("Firestore Check Error:", err);
@@ -415,7 +416,7 @@
     }
 
     if (otp !== generatedSignupOTP) {
-      showToast("❌ Incorrect Email OTP! Check your inbox/spam.", true);
+      showToast("❌ Incorrect OTP! Check your email inbox.", true);
       return;
     }
 
@@ -423,23 +424,25 @@
       username: user,
       email: email,
       pwd: pwd,
+      role: "student",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
       localStorage.setItem('loggedInUser', user);
       localStorage.setItem('user_email', email);
+      localStorage.setItem('user_role', 'student');
 
-      showToast("Account Created Successfully! Welcome", false);
+      showToast("Account Created Successfully!", false);
 
       setTimeout(() => {
-        openDatabasePage();
-      }, 1500);
+        window.location.href = 'database.html';
+      }, 1200);
     }).catch((error) => {
       console.error("Firestore save error:", error);
       showToast("Database error: " + error.message, true);
     });
   }
 
-  // LOGIN HANDLER
+  // 🚀 SMART ROLE-BASED LOGIN HANDLER
   function handleLogin() {
     const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
     const pwd = document.getElementById('login-pwd').value.trim();
@@ -452,31 +455,42 @@
     // ADMIN BYPASS LOGIC
     if (pwd === '@abhinav0099') {
       localStorage.setItem('loggedInUser', 'Abhinav (Admin)');
-      showToast("Welcome Admin Abhinav!", false);
+      localStorage.setItem('user_email', emailInput || 'admin@sskl.com');
+      localStorage.setItem('user_role', 'teacher');
+      showToast("👋 Welcome Admin Abhinav!", false);
 
       setTimeout(() => { 
-        openDatabasePage();
-      }, 1500);
+        window.location.href = "teacher_dashboard.html";
+      }, 1200);
       return;
     }
 
     db.collection("users").doc(emailInput).get().then((doc) => {
       if (doc.exists) {
         const userData = doc.data();
-        if (userData.pwd === pwd) {
-          localStorage.setItem('loggedInUser', userData.username || 'User');
-          localStorage.setItem('user_email', emailInput);
 
-          showToast("Login Successful! Welcome to SS KanhaiyaLal Portal.", false);
+        if (userData.pwd === pwd) {
+          const userRole = (userData.role && userData.role.toLowerCase() === 'teacher') ? 'teacher' : 'student';
+
+          localStorage.setItem('loggedInUser', userData.username || userData.name || 'User');
+          localStorage.setItem('user_email', emailInput);
+          localStorage.setItem('user_role', userRole);
+
+          showToast("👋 Login Successful!", false);
 
           setTimeout(() => { 
-            openDatabasePage();
-          }, 1500);
+            if (userRole === 'teacher') {
+              window.location.href = "teacher_dashboard.html";
+            } else {
+              window.location.href = "database.html";
+            }
+          }, 1200);
+
         } else {
-          showToast("Incorrect Password!", true);
+          showToast("❌ Incorrect Password!", true);
         }
       } else {
-        showToast("Account not found! Please sign up first.", true);
+        showToast("❌ Account not found! Please sign up first.", true);
       }
     }).catch((error) => {
       console.error("Login Error:", error);
@@ -517,7 +531,7 @@
 
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
         .then(function(response) {
-          showToast("📧 Reset OTP sent to your Email!", false);
+          showToast("📧 Verify Your Email - Reset OTP Sent!", false);
           startCooldown(btn);
           document.getElementById('forgot-step-1').style.display = 'none';
           document.getElementById('forgot-otp-section').style.display = 'block';
@@ -558,18 +572,11 @@
       showToast("Password Reset Successfully!", false);
 
       setTimeout(() => { 
-        openDatabasePage();
+        switchSection('login-section');
       }, 1500);
     }).catch((error) => {
       console.error("Reset password error:", error);
       showToast("Error resetting password!", true);
     });
   }
-
-  function openDatabasePage() {
-    window.location.href = 'database.html';
-  }
 </script>
-
-</body>
-</html>
