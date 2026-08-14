@@ -202,21 +202,52 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <script>
+  // 🎨 DYNAMIC CSS INJECTION (Dark Navy Blue Theme & Glow Animations)
+  (function injectDynamicStyles() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      body {
+        background: #070d19 !important;
+        background: linear-gradient(135deg, #070d19 0%, #0f172a 65%, #1e293b 100%) !important;
+        background-attachment: fixed !important;
+      }
+
+      input:focus, select:focus {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.4) !important;
+        outline: none !important;
+      }
+
+      button, .btn-action {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+
+      button:hover, .btn-action:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4) !important;
+        filter: brightness(1.1) !important;
+      }
+
+      button:active, .btn-action:active {
+        transform: scale(0.97) !important;
+      }
+    `;
+    document.head.appendChild(style);
+  })();
+
   // 1. EMAILJS CREDENTIALS
   const EMAILJS_PUBLIC_KEY = "a9bTH6r10HXOyjhXh";
   const EMAILJS_SERVICE_ID = "service_1igu4qg";
   const EMAILJS_TEMPLATE_ID = "template_jteag1i";
 
-  // Initialize EmailJS
   (function(){
     emailjs.init(EMAILJS_PUBLIC_KEY);
   })();
 
-  // 2. Firebase Configuration
+  // 2. FIREBASE CONFIGURATION
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -292,7 +323,7 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  // ⏱️ Cooldown Timer
+  // ⏱️ 45-Second Cooldown Timer
   function startCooldown(buttonObj) {
     let count = 45;
     const originalText = buttonObj.innerHTML;
@@ -344,7 +375,7 @@
     }
   }
 
-  // 📧 SEND SIGNUP EMAIL OTP
+  // 📧 SEND SIGNUP EMAIL OTP VIA EMAILJS
   function sendSignupOTP(event) {
     const user = document.getElementById('reg-username').value.trim();
     const email = document.getElementById('reg-email').value.trim().toLowerCase();
@@ -580,3 +611,6 @@
     });
   }
 </script>
+
+</body>
+</html>
