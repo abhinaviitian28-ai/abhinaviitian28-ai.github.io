@@ -4,297 +4,424 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SSKL Agrawal Memorial Bal Vidhya Mandir - Student Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
     
-    /* Clean Solid & Fast Gradient Background */
+    /* Deep Electric Navy Blue Theme - Same as Teacher Dashboard */
     body { 
-      background: #0f172a;
-      background: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #311026 100%);
+      background: #070d19;
+      background: linear-gradient(135deg, #070d19 0%, #0f172a 50%, #1e293b 100%);
+      background-attachment: fixed;
       min-height: 100vh; 
       color: #ffffff; 
       overflow-x: hidden;
-      overscroll-behavior-y: none; 
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(30, 41, 59, 0.7);
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 20px;
-    gap: 10px;
-}
+    .wrapper {
+      width: 100%;
+      max-width: 1100px;
+      animation: containerEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-.school-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-}
+    @keyframes containerEntrance {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-.school-logo {
-    width: 45px;
-    height: 45px;
-    background: #2563eb;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
-    flex-shrink: 0;
-}
+    /* Top Glassmorphic Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.75);
+      padding: 20px 24px;
+      border-radius: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      margin-bottom: 20px;
+      gap: 15px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.1);
+    }
 
-.school-text h2 {
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.3;
-    color: #ffffff;
-    text-transform: uppercase;
-}
+    .school-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
 
-.school-text p {
-    font-size: 10px;
-    color: #94a3b8;
-    margin-top: 2px;
-}
+    .school-logo {
+      width: 54px;
+      height: 54px;
+      background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      flex-shrink: 0;
+    }
 
-.profile-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    text-decoration: none;
-    flex-shrink: 0;
-}
+    .school-text h2 {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
 
-.profile-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #3b82f6;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #60a5fa;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    text-transform: uppercase;
-}
+    .school-text p {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+      font-weight: 500;
+    }
 
-.you-text {
-    font-size: 11px;
-    color: #cbd5e1;
-    margin-top: 4px;
-    font-weight: 600;
-    max-width: 110px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-}
+    .profile-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      text-decoration: none;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
 
-    /* News Ticker - Clean and Fast */
+    .profile-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+      text-transform: uppercase;
+    }
+
+    .you-text {
+      font-size: 12px;
+      color: #38bdf8;
+      margin-top: 4px;
+      font-weight: 600;
+      max-width: 110px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    /* Glowing News Ticker */
     .news-ticker { 
-      background: #090d16; 
-      padding: 8px 5%; font-size: 12px; display: flex; align-items: center; gap: 10px; 
-      border-bottom: 1px solid rgba(255,255,255,0.06); 
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 14px;
+      padding: 10px 18px; 
+      font-size: 13px; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      margin-bottom: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
-    .news-ticker i { color: #fbbf24; }
-    .news-ticker marquee { color: #cbd5e1; font-weight: 300; }
+    .news-ticker i { color: #fbbf24; font-size: 15px; }
+    .news-ticker marquee { color: #cbd5e1; font-weight: 400; }
 
-    /* Main Container */
-    .container { padding: 25px 5%; max-width: 1200px; margin: 0 auto; }
+    /* Section Title */
+    .section-title-bar {
+      font-size: 15px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
 
     /* Dashboard Grid */
     .dashboard-grid { 
       display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
-      gap: 20px; 
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+      gap: 22px; 
       padding-bottom: 40px; 
     }
     
-    /* Zero-Lag Fast Cards */
+    /* Glassmorphic Animated Cards */
     .card { 
-      background: rgba(255, 255, 255, 0.05); 
+      background: rgba(30, 41, 59, 0.55); 
       border: 1px solid rgba(255, 255, 255, 0.12); 
-      border-radius: 18px; 
-      padding: 22px 18px; 
+      border-radius: 20px; 
+      padding: 26px 24px; 
       cursor: pointer; 
-      text-align: center; 
-      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; 
-      
-      transition: transform 0.15s ease-out, background-color 0.15s ease-out, border-color 0.15s ease-out; 
-      transform: translate3d(0, 0, 0);
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+      gap: 18px; 
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
     }
 
-    .card:hover { 
-      transform: translate3d(0, -4px, 0); 
-      background: rgba(255, 255, 255, 0.1); 
-      border-color: rgba(255, 255, 255, 0.3);
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
-    /* Inner Icon Box */
+    .card:hover::before { opacity: 1; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
     .card-icon { 
-      width: 58px; height: 58px; border-radius: 14px; 
+      width: 56px; height: 56px; border-radius: 16px; 
       display: flex; justify-content: center; align-items: center; font-size: 24px; 
-      background: rgba(255, 255, 255, 0.08); 
-      margin-bottom: 4px; 
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
-    /* Distinct Left Borders for Cards */
-    .card-notice { border-left: 4px solid #38bdf8; }
-    .card-notice .card-icon { color: #38bdf8; }
-
-    .card-attendance { border-left: 4px solid #a78bfa; }
-    .card-attendance .card-icon { color: #a78bfa; }
-
-    .card-assignments { border-left: 4px solid #2dd4bf; }
-    .card-assignments .card-icon { color: #2dd4bf; }
-
-    .card-achievements { border-left: 4px solid #fbbf24; }
-    .card-achievements .card-icon { color: #fbbf24; }
-
-    .card-library { border-left: 4px solid #34d399; }
-    .card-library .card-icon { color: #34d399; }
-
-    .card-exams { border-left: 4px solid #f472b6; }
-    .card-exams .card-icon { color: #f472b6; }
-
-    .card-fees { border-left: 4px solid #fb923c; }
-    .card-fees .card-icon { color: #fb923c; }
-
-    .card h3 { font-size: 16px; font-weight: 600; color: #ffffff; }
-    .card p { font-size: 11px; color: #94a3b8; font-weight: 300; }
-
-    /* --- Inner Section View --- */
-    #inner-section { display: none; padding-bottom: 40px; }
-    
-    .back-btn { 
-      background: rgba(255, 255, 255, 0.08); 
-      border: 1px solid rgba(255, 255, 255, 0.2); 
-      color: #ffffff; 
-      padding: 8px 18px; 
-      border-radius: 30px; 
-      cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; 
-      font-size: 13px; font-weight: 500;
+    .card-text h3 { 
+      font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 4px; letter-spacing: 0.2px;
     }
-    .back-btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .card-text p { 
+      font-size: 12.5px; color: #94a3b8; font-weight: 400; line-height: 1.4;
+    }
 
-    .inner-content-box { 
-      background: #0f172a; 
-      border: 1px solid rgba(255, 255, 255, 0.12); 
-      border-radius: 18px; padding: 28px; min-height: 350px; 
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #cbd5e1;
+      transition: all 0.3s ease;
     }
-    
-    .section-title { 
-      font-size: 20px; font-weight: 600; margin-bottom: 20px; 
-      display: flex; align-items: center; gap: 10px; color: #ffffff; 
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; 
-    }
-    .section-title i { color: #38bdf8; }
 
-    .mock-list { display: flex; flex-direction: column; gap: 12px; }
-    .mock-item { 
-      padding: 14px 18px; 
-      background: rgba(255, 255, 255, 0.04); 
-      border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);
-      border-left: 4px solid #38bdf8; 
+    .card-bottom i { transition: transform 0.3s ease; }
+    .card:hover .card-bottom i { transform: translateX(6px); }
+
+    /* Distinct Card Colors & Glow Borders */
+    .card-notice { border-left: 5px solid #38bdf8; }
+    .card-notice .card-icon { color: #38bdf8; background: rgba(56, 189, 248, 0.18); border-color: rgba(56, 189, 248, 0.3); }
+    .card-notice:hover { 
+      transform: translateY(-8px) scale(1.02); 
+      border-color: #38bdf8; 
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(56, 189, 248, 0.25);
     }
-    .mock-item h4 { margin-bottom: 4px; font-size: 14px; font-weight: 600; color: #ffffff; }
-    .mock-item p { font-size: 12px; color: #94a3b8; font-weight: 300; }
+    .card-notice:hover .card-bottom { color: #38bdf8; }
+
+    .card-attendance { border-left: 5px solid #a78bfa; }
+    .card-attendance .card-icon { color: #a78bfa; background: rgba(167, 139, 250, 0.18); border-color: rgba(167, 139, 250, 0.3); }
+    .card-attendance:hover { 
+      transform: translateY(-8px) scale(1.02); 
+      border-color: #a78bfa; 
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(167, 139, 250, 0.25);
+    }
+    .card-attendance:hover .card-bottom { color: #a78bfa; }
+
+    .card-assignments { border-left: 5px solid #2dd4bf; }
+    .card-assignments .card-icon { color: #2dd4bf; background: rgba(45, 212, 191, 0.18); border-color: rgba(45, 212, 191, 0.3); }
+    .card-assignments:hover { 
+      transform: translateY(-8px) scale(1.02); 
+      border-color: #2dd4bf; 
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(45, 212, 191, 0.25);
+    }
+    .card-assignments:hover .card-bottom { color: #2dd4bf; }
+
+    .card-achievements { border-left: 5px solid #fbbf24; }
+    .card-achievements .card-icon { color: #fbbf24; background: rgba(251, 191, 36, 0.18); border-color: rgba(251, 191, 36, 0.3); }
+    .card-achievements:hover { 
+      transform: translateY(-8px) scale(1.02); 
+      border-color: #fbbf24; 
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(251, 191, 36, 0.25);
+    }
+    .card-achievements:hover .card-bottom { color: #fbbf24; }
+
+    .card-library { border-left: 5px solid #34d399; }
+    .card-library .card-icon { color: #34d399; background: rgba(52, 211, 153, 0.18); border-color: rgba(52, 211, 153, 0.3); }
+    .card-library:hover { 
+      transform: translateY(-8px) scale(1.02); 
+      border-color: #34d399; 
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(52, 211, 153, 0.25);
+    }
+    .card-library:hover .card-bottom { color: #34d399; }
+
+    .card-exams { border-left: 5px solid #f472b6; }
+    .card-exams .card-icon { color: #f472b6; background: rgba(244, 114, 182, 0.18); border-color: rgba(244, 114, 182, 0.3); }
+    .card-exams:hover { 
+      transform: translateY(-8px) scale(1.02); 
+      border-color: #f472b6; 
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(244, 114, 182, 0.25);
+    }
+    .card-exams:hover .card-bottom { color: #f472b6; }
+
+    @media (max-width: 650px) {
+      .header { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .profile-btn { width: 100%; flex-direction: row; gap: 12px; justify-content: flex-start; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="school-info">
-        <div class="school-logo"><i class="fa-solid fa-graduation-cap"></i></div>
-        <div class="school-text">
-            <h2>SS KANHAIYA LAL AGRAWAL MEMORIAL BAL VIDHYA MANDIR</h2>
-            <p>Jalaun, UP • Digital Campus Portal</p>
+<div class="wrapper">
+
+    <!-- Top Header Card -->
+    <div class="header">
+        <div class="school-info">
+            <div class="school-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="school-text">
+                <h2>SS KANHAIYA LAL AGRAWAL MEMORIAL BAL VIDHYA MANDIR</h2>
+                <p>Jalaun, UP • Digital Campus Portal</p>
+            </div>
         </div>
+
+        <a href="profile.html" class="profile-btn" title="View Profile">
+            <div class="profile-avatar" id="avatarInitial">U</div>
+            <span class="you-text" id="userDisplayName">You</span>
+        </a>
     </div>
 
-    <a href="profile.html" class="profile-btn" title="View Profile">
-        <div class="profile-avatar" id="avatarInitial">U</div>
-        <span class="you-text" id="userDisplayName">You</span>
-    </a>
-</div>
+    <!-- Live Announcement Marquee -->
+    <div class="news-ticker">
+      <i class="fa-solid fa-bolt"></i>
+      <marquee id="marqueeText" scrollamount="5">Welcome to 'SS KanhaiyaLal Agrawal Memorial Bal Vidhya Mandir Jalaun' Digital Portal • This website is designed by 'Abhinav Pandey'.</marquee>
+    </div>
 
-  <div class="news-ticker">
-    <i class="fa-solid fa-bolt"></i>
-    <marquee id="marqueeText" scrollamount="5">Welcome to 'SS KanhaiyaLal Agrawal Memorial Bal Vidhya Mandir Jalaun' Digital Portal • This website is designed by 'Abhinav Pandey'.</marquee>
-  </div>
+    <div class="section-title-bar">
+      <i class="fa-solid fa-shapes"></i> Student Portal Modules
+    </div>
 
-  <div class="container">
-    
+    <!-- Animated Glassmorphic Cards Grid -->
     <div id="main-dashboard" class="dashboard-grid">
       
+      <!-- 1. Notice Board -->
       <div class="card card-notice" onclick="window.location.href='notice.html'">
-        <div class="card-icon"><i class="fa-solid fa-bullhorn"></i></div>
-        <h3>Notice Board</h3>
-        <p>School Updates & News</p>
-      </div>
-
-      <div class="card card-attendance" onclick="window.location.href='attendance.html'">
-        <div class="card-icon"><i class="fa-solid fa-calendar-check"></i></div>
-        <h3>Attendance</h3>
-        <p>Check your daily presence</p>
-      </div>
-
-      <div class="card card-assignments" onclick="window.location.href='assignment.html'">
-        <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
-        <h3>Assignments</h3>
-        <p>Daily Tasks & Homework</p>
-      </div>
-
-      <div class="card card-achievements" onclick="window.location.href='achievements.html'">
-        <div class="card-icon"><i class="fa-solid fa-crown"></i></div>
-        <h3>Achievements</h3>
-        <p>Rank, Badges & Reports</p>
-      </div>
-
-      <div class="card card-library" onclick="window.location.href='elibrary.html'">
-        <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
-        <h3>E-Library</h3>
-        <p>Digital Books & Notes</p>
-      </div>
-
-      <div class="card card-exams" onclick="window.location.href='exam.html'">
-        <div class="card-icon"><i class="fa-solid fa-file-signature"></i></div>
-        <h3>Exams & Syllabus</h3>
-        <p>Schedules & Courses</p>
-      </div>
-
-    
-    <div id="inner-section">
-      <button class="back-btn" onclick="closeSection()">
-        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-      </button>
-      
-      <div class="inner-content-box">
-        <h2 class="section-title" id="section-title"><i class="fa-solid fa-star" id="section-icon"></i> Section Name</h2>
-        
-        <div class="mock-list">
-          <div class="mock-item">
-            <h4 id="content-heading">Data Loading...</h4>
-            <p id="content-desc">Securely fetching your private details from the server...</p>
+        <div class="card-top">
+          <div class="card-icon"><i class="fa-solid fa-bullhorn"></i></div>
+          <div class="card-text">
+            <h3>Notice Board</h3>
+            <p>School Updates & News</p>
           </div>
         </div>
-
+        <div class="card-bottom">
+          <span>View Notices</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
       </div>
+
+      <!-- 2. Attendance -->
+      <div class="card card-attendance" onclick="window.location.href='attendance.html'">
+        <div class="card-top">
+          <div class="card-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="card-text">
+            <h3>Attendance</h3>
+            <p>Check daily presence</p>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <span>Check Status</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </div>
+
+      <!-- 3. Assignments -->
+      <div class="card card-assignments" onclick="window.location.href='assignment.html'">
+        <div class="card-top">
+          <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
+          <div class="card-text">
+            <h3>Assignments</h3>
+            <p>Daily Tasks & Homework</p>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <span>View Tasks</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </div>
+
+      <!-- 4. Achievements -->
+      <div class="card card-achievements" onclick="window.location.href='achievements.html'">
+        <div class="card-top">
+          <div class="card-icon"><i class="fa-solid fa-crown"></i></div>
+          <div class="card-text">
+            <h3>Achievements</h3>
+            <p>Rank, Badges & Reports</p>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <span>View Ranks</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </div>
+
+      <!-- 5. E-Library -->
+      <div class="card card-library" onclick="window.location.href='elibrary.html'">
+        <div class="card-top">
+          <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
+          <div class="card-text">
+            <h3>E-Library</h3>
+            <p>Digital Books & Notes</p>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <span>Open Library</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </div>
+
+      <!-- 6. Exams & Syllabus -->
+      <div class="card card-exams" onclick="window.location.href='exam.html'">
+        <div class="card-top">
+          <div class="card-icon"><i class="fa-solid fa-file-signature"></i></div>
+          <div class="card-text">
+            <h3>Exams & Syllabus</h3>
+            <p>Schedules & Courses</p>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <span>View Syllabus</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </div>
+
     </div>
 
-  </div>
+</div>
 
+<!-- Firebase Scripts -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -324,7 +451,6 @@
   }
   const db = firebase.firestore();
 
-  let previousScrollPosition = 0;
   let studentProfile = {};
 
   // 4. Page Load Initialization
@@ -372,7 +498,6 @@
         const nameElem = document.getElementById('userDisplayName');
         const avatarElem = document.getElementById('avatarInitial');
 
-        // Avatar ke niche KEWAL NAAM dikhane ke liye:
         if (nameElem) {
           nameElem.innerText = name;
         }
@@ -398,37 +523,6 @@
     }, (err) => {
       console.log("Marquee announcement load error:", err);
     });
-  }
-
-  // 5. Section Toggle Logic
-  function openSection(title, iconClass, description) {
-    previousScrollPosition = window.scrollY || document.documentElement.scrollTop;
-    
-    const mainDash = document.getElementById('main-dashboard');
-    if (mainDash) mainDash.style.display = 'none';
-    
-    const secTitle = document.getElementById('section-title');
-    const contentHead = document.getElementById('content-heading');
-    const contentDesc = document.getElementById('content-desc');
-
-    if (secTitle) secTitle.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${title}`;
-    if (contentHead) contentHead.textContent = `Welcome to ${title}`;
-    if (contentDesc) contentDesc.textContent = description;
-
-    const innerSec = document.getElementById('inner-section');
-    if (innerSec) innerSec.style.display = 'block';
-    
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }
-
-  function closeSection() {
-    const innerSec = document.getElementById('inner-section');
-    const mainDash = document.getElementById('main-dashboard');
-
-    if (innerSec) innerSec.style.display = 'none';
-    if (mainDash) mainDash.style.display = 'grid';
-    
-    window.scrollTo({ top: previousScrollPosition, behavior: 'instant' });
   }
 </script>
   
