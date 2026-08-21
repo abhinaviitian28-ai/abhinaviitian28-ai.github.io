@@ -366,7 +366,6 @@
         }
     </style>
 </head>
-
 <body>
 
     <div class="container">
@@ -392,6 +391,13 @@
                 <i class="fa-solid fa-spinner fa-spin"></i>
                 <h3>Loading Assignments...</h3>
             </div>
+        </div>
+
+        <!-- 🔘 5-5 Assignments Load Karne Ke Liye See More Button -->
+        <div style="text-align: center; margin: 25px 0;">
+            <button id="seeMoreAssignmentsBtn" onclick="loadMoreAssignments()" style="display: none; padding: 12px 26px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px;">
+                <i class="fa-solid fa-chevron-down"></i> See More Assignments
+            </button>
         </div>
     </div>
 
@@ -423,7 +429,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Check Login Session
         const loggedInUser = localStorage.getItem('loggedInUser');
         const userEmail = localStorage.getItem('user_email');
 
@@ -431,7 +436,6 @@
             window.location.href = 'index.html';
         }
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
             authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -447,25 +451,24 @@
         }
         const db = firebase.firestore();
 
-        // State Variables
         let studentProfile = {};
         let currentClass = "";
         let currentStream = "";
         let assignmentsData = [];
         let searchQuery = "";
         let currentAttachmentUrl = "";
-        let assignmentsUnsubscribe = null;
 
-        // UI Elements
+        // ⚡ 5-5 Pagination Variables
+        let lastAssignmentDoc = null;
+        let hasMoreAssignments = true;
+
         const container = document.getElementById('assignmentsContainer');
 
-        // 1. Initialize Portal
         async function initAssignmentPortal() {
             await fetchStudentProfile();
-            setupRealtimeAssignments();
+            loadInitialAssignments();
         }
 
-        // 2. Fetch Student Profile for Class and Stream
         async function fetchStudentProfile() {
             try {
                 const studentsRef = db.collection('students');
@@ -485,50 +488,98 @@
             }
         }
 
-        // 3. Real-time Live Listener with Class & Stream Filtering
-        function setupRealtimeAssignments() {
-            if (assignmentsUnsubscribe) assignmentsUnsubscribe();
+        // ⚡ 5-5 Batch Fetching Logic
+        function loadInitialAssignments() {
+            assignmentsData = [];
+            lastAssignmentDoc = null;
+            hasMoreAssignments = true;
+            fetchAssignmentsBatch(false);
+        }
 
-            assignmentsUnsubscribe = db.collection("assignments").onSnapshot((snapshot) => {
-                assignmentsData = [];
+        function fetchAssignmentsBatch(isAppend = false) {
+            if (!isAppend) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <h3>Loading Assignments...</h3>
+                    </div>
+                `;
+            }
+
+            let query = db.collection("assignments").orderBy("createdAt", "desc");
+
+            if (isAppend && lastAssignmentDoc) {
+                query = query.startAfter(lastAssignmentDoc);
+            }
+
+            query.limit(5).get().then((snapshot) => {
+                if (snapshot.empty) {
+                    hasMoreAssignments = false;
+                    updateSeeMoreButton();
+                    if (!isAppend && assignmentsData.length === 0) {
+                        renderList();
+                    }
+                    return;
+                }
+
+                lastAssignmentDoc = snapshot.docs[snapshot.docs.length - 1];
+
+                if (snapshot.docs.length < 5) {
+                    hasMoreAssignments = false;
+                }
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
 
-                    // Filter assignments according to Student Class and Stream
                     let classMatch = !data.class || data.class === "All" || data.class === currentClass;
                     let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === currentStream;
 
                     if (classMatch && streamMatch) {
-                        assignmentsData.push({
-                            id: doc.id,
-                            ...data
-                        });
+                        if (!assignmentsData.some(a => a.id === doc.id)) {
+                            assignmentsData.push({
+                                id: doc.id,
+                                ...data
+                            });
+                        }
                     }
                 });
 
-                // Sort newest or due date first
-                assignmentsData.sort((a, b) => {
-                    let timeA = a.createdAt ? a.createdAt.seconds : 0;
-                    let timeB = b.createdAt ? b.createdAt.seconds : 0;
-                    return timeB - timeA;
-                });
+                if (assignmentsData.length === 0 && hasMoreAssignments) {
+                    fetchAssignmentsBatch(true);
+                    return;
+                }
 
                 renderList();
-            }, (error) => {
-                console.error("Firestore real-time error:", error);
-                assignmentsData = [];
-                renderList();
+                updateSeeMoreButton();
+            }).catch((error) => {
+                console.error("Firestore error:", error);
+                if (!isAppend) renderList();
             });
         }
 
-        // Handle Search
-        function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            renderList();
+        function loadMoreAssignments() {
+            if (hasMoreAssignments) {
+                fetchAssignmentsBatch(true);
+            }
         }
 
-        // Render Cards List
+        function updateSeeMoreButton() {
+            const btn = document.getElementById('seeMoreAssignmentsBtn');
+            if (!btn) return;
+
+            if (hasMoreAssignments && searchQuery === '') {
+                btn.style.display = 'inline-block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderList();
+            updateSeeMoreButton();
+        }
+
         function renderList() {
             container.innerHTML = "";
 
@@ -593,7 +644,6 @@
             });
         }
 
-        // Modal Functions
         function openModal(id) {
             const item = assignmentsData.find(a => a.id === id);
             if (!item) return;
@@ -627,7 +677,6 @@
             document.getElementById('assignmentModal').style.display = 'none';
         }
 
-        // Close Modal when clicking outside the modal box
         window.onclick = function(event) {
             const modal = document.getElementById('assignmentModal');
             if (event.target === modal) {
@@ -643,7 +692,6 @@
             }
         }
 
-        // Initialize on page load
         document.addEventListener("DOMContentLoaded", initAssignmentPortal);
     </script>
 </body>
