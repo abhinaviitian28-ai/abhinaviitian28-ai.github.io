@@ -394,8 +394,7 @@
         }
     </style>
 </head>
-
-    <body>
+<body>
 
     <div class="container">
         <div class="top-bar">
@@ -448,6 +447,13 @@
             <div class="files-list" id="filesListContainer">
                 <div class="no-data">Loading Files...</div>
             </div>
+
+            <!-- 🔘 5-5 Files Load Karne Ke Liye See More Button -->
+            <div style="text-align: center; margin: 25px 0;">
+                <button id="seeMoreFilesBtn" onclick="loadMoreFiles()" style="display: none; padding: 12px 26px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px;">
+                    <i class="fa-solid fa-chevron-down"></i> See More Files
+                </button>
+            </div>
         </div>
 
     </div>
@@ -456,14 +462,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Check Login Session
         const loggedInUser = localStorage.getItem('loggedInUser');
         const userEmail = localStorage.getItem('user_email');
         if (!loggedInUser) {
             window.location.href = 'index.html';
         }
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
             authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -485,14 +489,13 @@
         let allFilesData = [];
         let showBookmarksOnly = false;
         
-        // Unsubscribe Listeners for Live Updates
-        let categoryUnsubscribe = null;
-        let filesUnsubscribe = null;
+        // ⚡ 5-5 Pagination Variables
+        let lastFileDoc = null;
+        let hasMoreFiles = true;
 
-        // Local bookmarks storage per user
+        let categoryUnsubscribe = null;
         let userBookmarks = JSON.parse(localStorage.getItem(`bookmarks_${loggedInUser}`)) || [];
 
-        // Auto-Icon selector for subjects
         function getAutoIcon(categoryName) {
             const name = (categoryName || '').toLowerCase();
             if (name.includes('phys')) return 'fa-atom';
@@ -506,7 +509,6 @@
             return 'fa-book';
         }
 
-        // 1. Initialize Library Portal & Load Student Profile
         async function initLibrary() {
             try {
                 const studentsRef = db.collection('students');
@@ -523,11 +525,9 @@
                 console.log("Error loading student profile:", err);
             }
 
-            // Real-time Category Listener Start
             setupRealtimeCategories();
         }
 
-        // 2. Real-time Live Listener for Categories (Layer 1)
         function setupRealtimeCategories() {
             const gridContainer = document.getElementById('categoriesGridContainer');
 
@@ -544,8 +544,6 @@
 
                 snapshot.forEach(doc => {
                     const cat = doc.data();
-                    
-                    // Filter categories according to Student Class and Stream
                     let classMatch = !cat.class || cat.class === "All" || cat.class === currentClass;
                     let streamMatch = !cat.stream || cat.stream === "All" || cat.stream === "General" || cat.stream === currentStream;
 
@@ -601,7 +599,6 @@
             document.getElementById('categoryCountNum').innerText = count;
         }
 
-        // Open specific category (Layer 2)
         function openCategory(categoryName) {
             activeCategoryName = categoryName;
             document.getElementById('currentCategoryTitle').innerHTML = `<i class="fa-solid fa-book"></i> ${categoryName} Materials`;
@@ -614,38 +611,60 @@
             showBookmarksOnly = false;
             document.getElementById('bookmarkFilterBtn').classList.remove('active');
 
-            // Setup Realtime files listener for this category
-            loadFilesInCategoryRealtime(categoryName);
+            // Reset 5-5 Batch Variables
+            allFilesData = [];
+            lastFileDoc = null;
+            hasMoreFiles = true;
+
+            fetchFilesBatch(false);
         }
 
-        // Back button returns to Categories view
         function showCategoriesView() {
-            if (filesUnsubscribe) filesUnsubscribe(); // Stop listening to specific category files
             document.getElementById('filesView').classList.add('hidden');
             document.getElementById('categoriesView').classList.remove('hidden');
             document.getElementById('backToCategoriesBtn').classList.add('hidden');
         }
 
-        // 3. Real-time Live Listener for Files in Category (Layer 2)
-        function loadFilesInCategoryRealtime(categoryName) {
+        // ⚡ 5-5 Paginated Batch Fetcher for Files
+        function fetchFilesBatch(isAppend = false) {
             const filesContainer = document.getElementById('filesListContainer');
-            filesContainer.innerHTML = `<div class="no-data">Loading files for ${categoryName}...</div>`;
+            
+            if (!isAppend) {
+                filesContainer.innerHTML = `<div class="no-data">Loading files for ${activeCategoryName}...</div>`;
+                allFilesData = [];
+            }
 
-            if (filesUnsubscribe) filesUnsubscribe();
+            let query = db.collection('library_files')
+                .where('category', '==', activeCategoryName)
+                .orderBy('timestamp', 'desc');
 
-            filesUnsubscribe = db.collection('library_files')
-                .where('category', '==', categoryName)
-                .onSnapshot((snapshot) => {
-                    allFilesData = [];
+            if (isAppend && lastFileDoc) {
+                query = query.startAfter(lastFileDoc);
+            }
 
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
+            query.limit(5).get().then((snapshot) => {
+                if (snapshot.empty) {
+                    hasMoreFiles = false;
+                    updateSeeMoreFilesButton();
+                    if (!isAppend && allFilesData.length === 0) {
+                        filesContainer.innerHTML = `<div class="no-data">Aapki Class/Stream ke liye koi file nahi hai.</div>`;
+                    }
+                    return;
+                }
 
-                        // Filter Files by Student Class & Stream
-                        let classMatch = !data.class || data.class === "All" || data.class === currentClass;
-                        let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === currentStream;
+                lastFileDoc = snapshot.docs[snapshot.docs.length - 1];
 
-                        if (classMatch && streamMatch) {
+                if (snapshot.docs.length < 5) {
+                    hasMoreFiles = false;
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    let classMatch = !data.class || data.class === "All" || data.class === currentClass;
+                    let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === currentStream;
+
+                    if (classMatch && streamMatch) {
+                        if (!allFilesData.some(f => f.id === doc.id)) {
                             allFilesData.push({
                                 id: doc.id,
                                 title: data.title || data.heading || 'Untitled Document',
@@ -655,19 +674,41 @@
                                 date: data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : 'Recent'
                             });
                         }
-                    });
-
-                    // Sort newest first
-                    allFilesData.sort((a, b) => b.timestamp - a.timestamp);
-
-                    renderFilesList(allFilesData);
-                }, (err) => {
-                    console.error("Error fetching files:", err);
-                    filesContainer.innerHTML = `<div class="no-data">Unable to fetch files from database.</div>`;
+                    }
                 });
+
+                if (allFilesData.length === 0 && hasMoreFiles) {
+                    fetchFilesBatch(true);
+                    return;
+                }
+
+                renderFilesList(allFilesData);
+                updateSeeMoreFilesButton();
+
+            }).catch((err) => {
+                console.error("Error fetching files:", err);
+                filesContainer.innerHTML = `<div class="no-data">Unable to fetch files from database.</div>`;
+            });
         }
 
-        // Render Files List
+        function loadMoreFiles() {
+            if (hasMoreFiles) {
+                fetchFilesBatch(true);
+            }
+        }
+
+        function updateSeeMoreFilesButton() {
+            const btn = document.getElementById('seeMoreFilesBtn');
+            if (!btn) return;
+            const searchVal = document.getElementById('fileSearchInput') ? document.getElementById('fileSearchInput').value.trim() : '';
+
+            if (hasMoreFiles && !showBookmarksOnly && searchVal === '') {
+                btn.style.display = 'inline-block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
         function renderFilesList(files) {
             const filesContainer = document.getElementById('filesListContainer');
             
@@ -732,6 +773,7 @@
 
         function filterFiles() {
             renderFilesList(allFilesData);
+            updateSeeMoreFilesButton();
         }
 
         function toggleBookmarkFilter() {
@@ -743,6 +785,7 @@
                 btn.classList.remove('active');
             }
             renderFilesList(allFilesData);
+            updateSeeMoreFilesButton();
         }
 
         function toggleBookmark(fileId) {
