@@ -736,7 +736,7 @@
         }
     </style>
 </head>
-<body>
+    <body>
 
     <div class="container">
         <div class="announcement-bar animated-btn" id="announcementBar">
@@ -865,6 +865,13 @@
             <div class="exams-list" id="examsListContainer">
                 <div class="no-data">Loading Exam Schedule from Database...</div>
             </div>
+
+            <!-- 🔘 5-5 Exams Load Karne Ke Liye See More Button -->
+            <div style="text-align: center; margin: 25px 0;">
+                <button id="seeMoreExamsBtn" onclick="loadMoreExams()" style="display: none; padding: 12px 26px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px;">
+                    <i class="fa-solid fa-chevron-down"></i> See More Exams
+                </button>
+            </div>
         </div>
 
     </div>
@@ -895,11 +902,11 @@
             </div>
         </div>
     </div>
+
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Configuration with API Keys
         const firebaseConfig = {
             apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
             authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -920,7 +927,10 @@
         let allSubjectsData = [];
         let allExamsData = [];
 
-        // Student Profile Data from localStorage & Firebase
+        // ⚡ 5-5 Exams Pagination Variables
+        let lastExamDoc = null;
+        let hasMoreExams = true;
+
         let loggedInUser = localStorage.getItem('loggedInUser');
         let studentProfile = {};
 
@@ -976,7 +986,6 @@
             loadExamsFromFirebase();
         }
 
-        // Navigation
         function openMainHub(hubName) {
             document.getElementById('mainHubsView').classList.add('hidden');
             if (hubName === 'syllabus') {
@@ -995,7 +1004,6 @@
             document.getElementById('examsView').classList.add('hidden');
         }
 
-        // Fetch Categories from Firebase
         async function loadCategoriesFromFirebase() {
             const container = document.getElementById('categoriesGridContainer');
             try {
@@ -1040,7 +1048,6 @@
                 `;
             });
         }
-
         async function openCategory(categoryName) {
             currentCategoryName = categoryName;
             document.getElementById('syllabusLayerCategories').classList.add('hidden');
@@ -1151,16 +1158,39 @@
             document.getElementById('subjectModal').classList.remove('active');
         }
 
+        // ⚡ 5-5 Paginated Exams Fetching Logic
         async function loadExamsFromFirebase() {
+            allExamsData = [];
+            lastExamDoc = null;
+            hasMoreExams = true;
+            await fetchExamsBatch(false);
+        }
+
+        async function fetchExamsBatch(isAppend = false) {
             const container = document.getElementById('examsListContainer');
             
             try {
-                const snapshot = await db.collection('exams').get();
-                allExamsData = [];
+                let query = db.collection('exams').orderBy('createdAt', 'desc');
+
+                if (isAppend && lastExamDoc) {
+                    query = query.startAfter(lastExamDoc);
+                }
+
+                const snapshot = await query.limit(5).get();
 
                 if (snapshot.empty) {
-                    if (container) container.innerHTML = '<div class="no-data">No Exams Found</div>';
+                    hasMoreExams = false;
+                    updateSeeMoreExamsButton();
+                    if (!isAppend && allExamsData.length === 0) {
+                        if (container) container.innerHTML = '<div class="no-data">No Exams Found</div>';
+                    }
                     return;
+                }
+
+                lastExamDoc = snapshot.docs[snapshot.docs.length - 1];
+
+                if (snapshot.docs.length < 5) {
+                    hasMoreExams = false;
                 }
 
                 let studentClass = studentProfile.class || studentProfile.classSection || "";
@@ -1172,19 +1202,39 @@
                     let streamMatch = !data.stream || data.stream === "All" || data.stream === "General" || data.stream === studentStream;
 
                     if (classMatch && streamMatch) {
-                        allExamsData.push({ id: doc.id, ...data });
+                        if (!allExamsData.some(e => e.id === doc.id)) {
+                            allExamsData.push({ id: doc.id, ...data });
+                        }
                     }
                 });
 
-                if (allExamsData.length === 0) {
-                    if (container) container.innerHTML = '<div class="no-data">Aapki Class/Stream ke liye koi exam nahi hai.</div>';
+                if (allExamsData.length === 0 && hasMoreExams) {
+                    fetchExamsBatch(true);
                     return;
                 }
 
                 renderExams(allExamsData);
+                updateSeeMoreExamsButton();
 
             } catch (err) {
                 console.log("Error loading filtered exams:", err);
+            }
+        }
+
+        function loadMoreExams() {
+            if (hasMoreExams) {
+                fetchExamsBatch(true);
+            }
+        }
+
+        function updateSeeMoreExamsButton() {
+            const btn = document.getElementById('seeMoreExamsBtn');
+            if (!btn) return;
+            const searchVal = document.getElementById('examSearchInput') ? document.getElementById('examSearchInput').value.trim() : '';
+            if (hasMoreExams && searchVal === '') {
+                btn.style.display = 'inline-block';
+            } else {
+                btn.style.display = 'none';
             }
         }
 
@@ -1234,7 +1284,6 @@
             });
         }
 
-        // Search Filters
         function filterCategories() {
             const q = document.getElementById('categorySearchInput').value.toLowerCase();
             const filtered = allCategoriesData.filter(c => c.name.toLowerCase().includes(q) || (c.description && c.description.toLowerCase().includes(q)));
@@ -1251,6 +1300,7 @@
             const q = document.getElementById('examSearchInput').value.toLowerCase();
             const filtered = allExamsData.filter(e => e.title.toLowerCase().includes(q) || (e.description && e.description.toLowerCase().includes(q)));
             renderExams(filtered);
+            updateSeeMoreExamsButton();
         }
 
         window.onload = function() {
