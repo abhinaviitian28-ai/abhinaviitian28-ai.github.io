@@ -374,7 +374,7 @@
                 <i class="fa-solid fa-book-open"></i>
                 <span>Assignments</span>
             </div>
-            <a href="dashboard.html" class="btn-dashboard">
+            <a href="database.html" class="btn-dashboard">
                 <i class="fa-solid fa-house"></i> Dashboard
             </a>
         </div>
@@ -430,8 +430,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        const loggedInUser = (localStorage.getItem('loggedInUser') || localStorage.getItem('username') || '').toLowerCase().trim();
-        const userEmail = (localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '').toLowerCase().trim();
+        const loggedInUser = localStorage.getItem('loggedInUser') || localStorage.getItem('username') || '';
+        const userEmail = localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '';
 
         if (!loggedInUser && !userEmail) {
             window.location.href = 'index.html';
@@ -453,7 +453,7 @@
         const db = firebase.firestore();
 
         let studentProfile = {
-            classNum: "11",
+            class: "11",
             section: "B",
             stream: "PCM"
         };
@@ -466,17 +466,17 @@
 
         const container = document.getElementById('assignmentsContainer');
 
-        function cleanClass(val) {
+        function cleanClassNum(val) {
             if (!val) return '';
             const m = String(val).match(/\d+/);
             return m ? m[0] : String(val).trim().toUpperCase();
         }
 
-        function cleanSec(val) {
+        function cleanSecName(val) {
             if (!val) return 'ALL';
             const raw = String(val).toUpperCase().trim();
             const m = raw.match(/\b([A-D])\b/);
-            return m ? m[1] : (raw === 'ALL' ? 'ALL' : raw.replace(/[^A-D]/g, '') || 'B');
+            return m ? m[1] : (raw === 'ALL' ? 'ALL' : 'B');
         }
 
         async function initAssignmentPortal() {
@@ -486,26 +486,37 @@
 
         async function fetchStudentProfile() {
             try {
-                const usersRef = db.collection('users');
-                const querySnapshot = await usersRef.get();
-                
-                querySnapshot.forEach(doc => {
+                // Check both users and students collection
+                let found = false;
+                const usersSnap = await db.collection('users').get();
+                usersSnap.forEach(doc => {
                     const data = doc.data();
-                    const email = (data.email || '').toLowerCase().trim();
-                    const username = (data.username || data.name || data.fullName || '').toLowerCase().trim();
+                    const dEmail = (data.email || '').toLowerCase().trim();
+                    const dName = (data.username || data.name || data.fullName || '').toLowerCase().trim();
 
-                    if (email === userEmail || doc.id.toLowerCase() === userEmail || (loggedInUser && username === loggedInUser)) {
-                        studentProfile.classNum = cleanClass(data.studentClass || data.class || data.className || '11');
-                        studentProfile.section = cleanSec(data.section || data.sec || data.studentClass || 'B');
+                    if ((userEmail && (dEmail === userEmail.toLowerCase().trim() || doc.id.toLowerCase() === userEmail.toLowerCase().trim())) || 
+                        (loggedInUser && dName === loggedInUser.toLowerCase().trim())) {
+                        studentProfile.class = cleanClassNum(data.studentClass || data.class || data.className || '11');
+                        studentProfile.section = cleanSecName(data.section || data.sec || data.studentClass || 'B');
                         studentProfile.stream = (data.stream || data.curriculum || data.subject || 'PCM').toUpperCase();
+                        found = true;
                     }
                 });
+
+                if (!found) {
+                    const stuSnap = await db.collection('students').where('name', '==', loggedInUser).get();
+                    if (!stuSnap.empty) {
+                        const d = stuSnap.docs[0].data();
+                        studentProfile.class = cleanClassNum(d.class || d.classSection || '11');
+                        studentProfile.section = cleanSecName(d.section || d.sec || 'B');
+                        studentProfile.stream = (d.stream || 'PCM').toUpperCase();
+                    }
+                }
             } catch (err) {
-                console.warn("Profile read fallback to defaults:", err);
+                console.warn("Using fallback profile:", err);
             }
         }
 
-        // Live Realtime listener with auto smart filtering
         function listenAssignmentsLive() {
             db.collection("assignments").onSnapshot((snapshot) => {
                 allMatchedAssignments = [];
@@ -516,36 +527,46 @@
                 }
 
                 snapshot.forEach(doc => {
-                    const data = doc.data();
+                    const d = doc.data();
 
-                    const asClass = cleanClass(data.classNum || data.class);
-                    const myClass = cleanClass(studentProfile.classNum);
+                    // Matching Firestore fields shown in screenshot
+                    const asClass = cleanClassNum(d.classNum || d.class);
+                    const myClass = cleanClassNum(studentProfile.class);
 
-                    const asSec = cleanSec(data.section || data.sec);
-                    const mySec = cleanSec(studentProfile.section);
+                    const asSec = cleanSecName(d.section || d.sec);
+                    const mySec = cleanSecName(studentProfile.section);
 
-                    const asStream = (data.stream || 'GENERAL').toUpperCase();
+                    const asStream = (d.stream || 'GENERAL').toUpperCase();
                     const myStream = (studentProfile.stream || 'PCM').toUpperCase();
 
-                    // Matching criteria
-                    const classOk = (!asClass || asClass === 'ALL' || asClass === myClass);
-                    const secOk = (!asSec || asSec === 'ALL' || mySec === 'ALL' || asSec === mySec);
-                    const streamOk = (!asStream || asStream === 'ALL' || asStream === 'GENERAL' || myStream.includes(asStream) || asStream.includes(myStream));
+                    const isClassMatch = (!asClass || asClass === 'ALL' || asClass === myClass || myClass === '');
+                    const isSecMatch = (!asSec || asSec === 'ALL' || mySec === 'ALL' || asSec === mySec);
+                    const isStreamMatch = (!asStream || asStream === 'ALL' || asStream === 'GENERAL' || myStream.includes(asStream) || asStream.includes(myStream));
 
-                    if (classOk && secOk && streamOk) {
+                    if (isClassMatch && isSecMatch && isStreamMatch) {
                         allMatchedAssignments.push({
                             id: doc.id,
-                            ...data
+                            title: d.title || 'Assignment',
+                            subject: d.subject || 'General',
+                            description: d.description || d.instructions || d.desc || d.content || 'No extra instructions provided.',
+                            dueDate: d.dueDate || d.date || 'N/A',
+                            teacherName: d.teacherName || d.teacher || 'Teacher',
+                            link: d.link || d.attachmentUrl || d.fileUrl || '',
+                            createdAt: d.createdAt
                         });
                     }
                 });
 
-                // Safe sorting by Date
-                allMatchedAssignments.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                // Safe sorting by creation date/timestamp
+                allMatchedAssignments.sort((a, b) => {
+                    let timeA = a.createdAt ? (a.createdAt.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime()) : 0;
+                    let timeB = b.createdAt ? (b.createdAt.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime()) : 0;
+                    return timeB - timeA;
+                });
 
                 applyPaginationAndRender();
             }, (error) => {
-                console.error("Firestore Error:", error);
+                console.error("Firestore read error:", error);
                 renderList();
             });
         }
@@ -585,8 +606,8 @@
             let source = (searchQuery === '') ? assignmentsData : allMatchedAssignments;
 
             let filtered = source.filter(item => {
-                let textToSearch = (item.title || '') + ' ' + (item.subject || '') + ' ' + (item.description || item.instructions || item.content || '') + ' ' + (item.teacherName || item.teacher || '');
-                return textToSearch.toLowerCase().includes(searchQuery);
+                let textToSearch = `${item.title} ${item.subject} ${item.description} ${item.teacherName}`.toLowerCase();
+                return textToSearch.includes(searchQuery);
             });
 
             if (filtered.length === 0) {
@@ -594,21 +615,19 @@
                     <div class="empty-state">
                         <i class="fa-solid fa-bell-slash"></i>
                         <h3>No Assignments Published Yet</h3>
-                        <p>Aapki Class (${studentProfile.classNum}th - Sec ${studentProfile.section}) ke liye koi naya assignment nahi hai.</p>
+                        <p>Aapki Class ke liye koi naya assignment nahi hai.</p>
                     </div>
                 `;
                 return;
             }
 
             filtered.forEach(item => {
-                let displayDate = item.dueDate || item.date || "N/A";
+                let displayDate = item.dueDate;
                 try { 
-                    if(displayDate !== "N/A") {
+                    if(displayDate && displayDate !== "N/A") {
                         displayDate = new Date(displayDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); 
                     }
                 } catch(e){}
-
-                let mainContent = item.description || item.instructions || item.content || item.desc || "No extra instructions provided.";
 
                 const card = document.createElement('div');
                 card.className = "card";
@@ -621,8 +640,8 @@
                                 <i class="fa-solid fa-file-lines"></i>
                             </div>
                             <div>
-                                <span style="font-size: 11px; color: #38bdf8; font-weight: 700; text-transform: uppercase;">${item.subject || 'General'}</span>
-                                <h3 class="card-title" style="margin-top: 2px;">${item.title || 'Assignment'}</h3>
+                                <span style="font-size: 11px; color: #38bdf8; font-weight: 700; text-transform: uppercase;">${item.subject}</span>
+                                <h3 class="card-title" style="margin-top: 2px;">${item.title}</h3>
                             </div>
                         </div>
                         <div class="card-date">
@@ -630,12 +649,12 @@
                         </div>
                     </div>
                     <div class="card-preview">
-                        ${mainContent}
+                        ${item.description}
                     </div>
                     <div class="card-footer">
                         <div class="publisher-info">
                             <i class="fa-solid fa-user-pen"></i>
-                            <span>${item.teacherName || item.teacher || 'Teacher'}</span>
+                            <span>${item.teacherName}</span>
                         </div>
                         <div class="read-more">
                             View Details <i class="fa-solid fa-arrow-right"></i>
@@ -650,26 +669,24 @@
             const item = allMatchedAssignments.find(a => a.id === id);
             if (!item) return;
 
-            let displayDate = item.dueDate || item.date || "N/A";
+            let displayDate = item.dueDate;
             try { 
-                if(displayDate !== "N/A") {
+                if(displayDate && displayDate !== "N/A") {
                     displayDate = new Date(displayDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); 
                 }
             } catch(e){}
 
-            let mainContent = item.description || item.instructions || item.content || item.desc || "No extra instructions provided.";
-
-            document.getElementById('modalTitle').innerText = item.title || 'Assignment Details';
+            document.getElementById('modalTitle').innerText = item.title;
             document.getElementById('modalDate').innerText = displayDate;
             document.getElementById('modalContent').innerHTML = `
-                <div style="margin-bottom: 8px;"><b style="color: #38bdf8;">Subject:</b> ${item.subject || 'General'}</div>
-                <div>${mainContent}</div>
+                <div style="margin-bottom: 8px;"><b style="color: #38bdf8;">Subject:</b> ${item.subject}</div>
+                <div>${item.description}</div>
             `;
             
-            currentAttachmentUrl = item.link || item.attachmentUrl || item.fileUrl || item.url || "#";
+            currentAttachmentUrl = item.link || "#";
             
             const btnDownload = document.getElementById('btnDownload');
-            if (currentAttachmentUrl && currentAttachmentUrl !== "#") {
+            if (currentAttachmentUrl && currentAttachmentUrl !== "#" && currentAttachmentUrl.trim() !== "") {
                 btnDownload.style.display = 'inline-flex';
             } else {
                 btnDownload.style.display = 'none';
@@ -690,7 +707,7 @@
         }
 
         function downloadAttachment() {
-            if (currentAttachmentUrl && currentAttachmentUrl !== "#") {
+            if (currentAttachmentUrl && currentAttachmentUrl !== "#" && currentAttachmentUrl.trim() !== "") {
                 window.open(currentAttachmentUrl, '_blank');
             } else {
                 alert("No attachment file was provided by the teacher for this assignment.");
