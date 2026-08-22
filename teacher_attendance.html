@@ -556,8 +556,7 @@
         <i class="fa-solid fa-users-viewfinder"></i> Load Student Sheet
       </button>
     </div>
-
-    <!-- Attendance Sheet Container -->
+        <!-- Attendance Sheet Container -->
     <div id="sheetCard" class="card" style="display: none;">
       <div class="sheet-meta">
         <span id="sheetTitle"><i class="fa-solid fa-layer-group"></i> Class Sheet</span>
@@ -590,18 +589,18 @@
         </div>
       </div>
 
-      <!-- 2x2 Quick Actions Grid -->
+      <!-- Quick Action Controls -->
       <div class="quick-actions">
-        <button class="btn-quick btn-all-p" onclick="markAllUnlocked('P')"><i class="fa-solid fa-check"></i> All Present</button>
-        <button class="btn-quick btn-all-a" onclick="markAllUnlocked('A')"><i class="fa-solid fa-xmark"></i> All Absent</button>
-        <button class="btn-quick btn-all-clear" onclick="markAllUnlocked('')"><i class="fa-solid fa-rotate-left"></i> General (Reset)</button>
-        <button class="btn-quick btn-copy-mail" onclick="copyAllEmails()"><i class="fa-solid fa-envelope"></i> Copy Mails</button>
+        <button class="btn-quick btn-rem-p" onclick="markRemaining('P')"><i class="fa-solid fa-check"></i> Mark Remaining Present</button>
+        <button class="btn-quick btn-rem-a" onclick="markRemaining('A')"><i class="fa-solid fa-xmark"></i> Mark Remaining Absent</button>
+        <button class="btn-quick btn-reset-gen" onclick="resetToGeneral()"><i class="fa-solid fa-rotate-left"></i> Reset to General</button>
+        <button class="btn-quick btn-copy-mail" onclick="copyAllEmails()"><i class="fa-solid fa-envelope"></i> Copy Emails</button>
       </div>
 
       <!-- Student List -->
       <div id="studentList" class="attendance-list"></div>
 
-      <!-- Save & Submit Button -->
+      <!-- Save Button -->
       <button id="saveBtn" class="btn-save-smooth" onclick="saveRecord()">
         <i class="fa-solid fa-cloud-arrow-up"></i> Save & Submit Attendance
       </button>
@@ -681,6 +680,7 @@
       if (targetStream === 'ARTS' && raw.includes('ARTS')) return true;
       return false;
     }
+
     async function loadList() {
       const date = document.getElementById('attDate').value;
       const selectedClassNum = extractNum(document.getElementById('attClass').value);
@@ -791,7 +791,7 @@
         let toggleHtml = '';
         if (s.locked) {
           toggleHtml = `
-            <div class="locked-badge" title="Locked">
+            <div class="locked-badge" title="Locked (Already Present)">
               <i class="fa-solid fa-lock"></i> P
             </div>
           `;
@@ -826,9 +826,18 @@
       render();
     }
 
-    function markAllUnlocked(st) {
+    function markRemaining(st) {
       students.forEach(s => {
-        if (!s.locked) s.status = st;
+        if (!s.locked && !s.status) {
+          s.status = st;
+        }
+      });
+      render();
+    }
+
+    function resetToGeneral() {
+      students.forEach(s => {
+        if (!s.locked) s.status = '';
       });
       render();
     }
