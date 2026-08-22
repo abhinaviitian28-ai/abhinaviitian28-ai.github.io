@@ -4,115 +4,76 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teacher Attendance - SSKL</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-    body { background: #070d19; color: #fff; padding: 12px; min-height: 100vh; }
-    .container { max-width: 680px; margin: 0 auto; }
+    body { background: #070d19; color: #fff; padding: 10px; }
+    .wrap { max-width: 600px; margin: 0 auto; }
 
     /* Compact Header */
-    .header {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #1e293b; padding: 10px 14px; border-radius: 10px;
-      border: 1px solid #38bdf840; margin-bottom: 12px;
-    }
-    .header h2 { font-size: 14px; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
-    .btn-dash {
-      color: #38bdf8; background: #38bdf81a; border: 1px solid #38bdf840;
-      padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 600;
-    }
+    .top { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; }
+    .top h2 { font-size: 13px; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
+    .btn-h { color: #38bdf8; background: #38bdf81a; padding: 4px 8px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 600; }
 
-    /* Minimal Box */
-    .box {
-      background: #0f172a; border: 1px solid #334155; border-radius: 12px;
-      padding: 14px; margin-bottom: 12px;
-    }
+    /* Box */
+    .box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; margin-bottom: 8px; }
+    label { font-size: 10px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 2px; }
+    .inp { width: 100%; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; border-radius: 5px; color: #fff; font-size: 11px; outline: none; }
 
-    /* Form Grid */
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 10px; }
-    label { font-size: 10.5px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 3px; }
-    .inp {
-      width: 100%; padding: 7px 9px; background: #1e293b; border: 1px solid #475569;
-      border-radius: 6px; color: #fff; font-size: 12px; outline: none;
-    }
-    .inp:focus { border-color: #38bdf8; }
+    /* Buttons */
+    .btn-b { width: 100%; padding: 7px; background: #0284c7; border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 11.5px; cursor: pointer; }
+    .btn-g { width: 100%; padding: 8px; background: #16a34a; border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer; margin-top: 8px; }
 
-    /* Action Buttons */
-    .btn-blue {
-      width: 100%; padding: 9px; background: #0284c7; border: none;
-      border-radius: 8px; color: #fff; font-weight: 600; font-size: 12.5px; cursor: pointer;
-    }
-    .btn-green {
-      width: 100%; padding: 10px; background: #16a34a; border: none;
-      border-radius: 8px; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 10px;
-    }
+    /* Summary & Lock Info */
+    .s-head { display: flex; justify-content: space-between; font-size: 11px; color: #38bdf8; font-weight: 600; margin-bottom: 6px; }
+    .lock-msg { background: #38bdf810; border: 1px solid #38bdf830; border-radius: 4px; padding: 4px 8px; font-size: 10px; color: #38bdf8; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
 
-    /* Stats Bar */
-    .stats { display: flex; gap: 6px; margin-bottom: 10px; }
-    .stat { flex: 1; background: #1e293b; padding: 6px; border-radius: 6px; text-align: center; font-size: 10px; color: #94a3b8; }
-    .stat b { display: block; font-size: 14px; }
+    /* Stats */
+    .stats { display: flex; gap: 4px; margin-bottom: 6px; }
+    .st { flex: 1; background: #1e293b; padding: 4px; border-radius: 4px; text-align: center; font-size: 9.5px; color: #94a3b8; }
+    .st b { display: block; font-size: 12px; color: #fff; }
 
-    /* Quick Action Controls */
-    .quick-bar { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-    .q-btn {
-      padding: 5px 10px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer;
-    }
+    /* Quick Actions */
+    .q-bar { display: flex; gap: 4px; margin-bottom: 6px; }
+    .q-b { padding: 3px 8px; border-radius: 4px; border: none; font-size: 10px; font-weight: 600; cursor: pointer; }
 
-    /* Student List */
-    .list { display: flex; flex-direction: column; gap: 6px; max-height: 440px; overflow-y: auto; }
-    .item {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #1e293b; padding: 8px 10px; border-radius: 8px; border: 1px solid #334155;
-    }
-    .item-info {
-      display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600;
-      min-width: 0; cursor: pointer;
-    }
-    .roll {
-      background: #38bdf820; color: #38bdf8; padding: 2px 6px; border-radius: 4px;
-      font-size: 11px; min-width: 26px; text-align: center; flex-shrink: 0;
-    }
-    .s-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* List */
+    .list { display: flex; flex-direction: column; gap: 4px; max-height: 380px; overflow-y: auto; }
+    .item { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 6px 8px; border-radius: 6px; }
+    .info { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; min-width: 0; cursor: pointer; }
+    .roll { background: #38bdf820; color: #38bdf8; padding: 1px 4px; border-radius: 3px; font-size: 10px; min-width: 20px; text-align: center; }
+    .tag { background: #a855f720; color: #c084fc; padding: 1px 4px; border-radius: 3px; font-size: 9px; }
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* Toggles */
-    .toggles { display: flex; gap: 4px; flex-shrink: 0; }
-    .t-btn {
-      width: 30px; height: 28px; border-radius: 5px; border: 1px solid #475569;
-      background: #0f172a; color: #94a3b8; font-weight: 700; font-size: 11px; cursor: pointer;
-    }
+    .toggles { display: flex; gap: 3px; align-items: center; }
+    .t-btn { width: 26px; height: 24px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #94a3b8; font-size: 10px; font-weight: 700; cursor: pointer; }
     .t-btn.p { background: #22c55e; color: #fff; border-color: #22c55e; }
     .t-btn.a { background: #ef4444; color: #fff; border-color: #ef4444; }
     .t-btn.l { background: #eab308; color: #fff; border-color: #eab308; }
+    .locked { background: #22c55e1a; color: #4ade80; border: 1px solid #22c55e40; padding: 2px 6px; border-radius: 4px; font-size: 9.5px; font-weight: 700; }
 
-    .no-data { text-align: center; padding: 18px; color: #94a3b8; font-size: 12px; }
+    .empty { text-align: center; padding: 14px; color: #94a3b8; font-size: 11px; }
 
     /* Modal */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center;
-      z-index: 100; padding: 14px;
-    }
-    .modal-content {
-      background: #0f172a; border: 1px solid #38bdf850; border-radius: 12px;
-      width: 100%; max-width: 360px; padding: 16px;
-    }
-    .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 700; color: #38bdf8; }
-    .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; border-bottom: 1px solid #1e293b; }
-    .row span:first-child { color: #94a3b8; }
-    .copy-tag { background: #38bdf820; color: #38bdf8; border: none; padding: 2px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; margin-left: 4px; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 99; padding: 10px; }
+    .m-body { background: #0f172a; border: 1px solid #38bdf850; border-radius: 8px; width: 100%; max-width: 320px; padding: 12px; font-size: 11px; }
+    .m-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1e293b; }
+    .c-tag { background: #38bdf820; color: #38bdf8; border: none; padding: 1px 4px; border-radius: 3px; font-size: 9px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header">
+  <div class="wrap">
+    <div class="top">
       <h2><i class="fa-solid fa-clipboard-user"></i> Attendance</h2>
-      <a href="teacher_dashboard.html" class="btn-dash"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="teacher_dashboard.html" class="btn-h"><i class="fa-solid fa-house"></i> Home</a>
     </div>
 
-    <!-- Filter Card -->
+    <!-- Filter -->
     <div class="box">
       <div class="grid">
         <div>
@@ -124,60 +85,70 @@
           <select id="attClass" class="inp" onchange="toggleStream()">
             <option value="9">Class 9th</option>
             <option value="10">Class 10th</option>
-            <option value="11">Class 11th</option>
+            <option value="11" selected>Class 11th</option>
             <option value="12">Class 12th</option>
           </select>
         </div>
         <div>
           <label>Section</label>
           <select id="attSection" class="inp">
-            <option value="A">Section A</option>
-            <option value="B">Section B</option>
-            <option value="C">Section C</option>
+            <option value="ALL">All Sec</option>
+            <option value="A" selected>Sec A</option>
+            <option value="B">Sec B</option>
+            <option value="C">Sec C</option>
           </select>
         </div>
-        <div id="streamBox" style="display: none;">
+        <div id="streamBox">
           <label>Stream</label>
           <select id="attStream" class="inp">
-            <option value="PCM">PCM</option>
+            <option value="PCM" selected>PCM</option>
             <option value="PCB">PCB</option>
             <option value="Commerce">Commerce</option>
             <option value="Arts">Arts</option>
           </select>
         </div>
       </div>
-      <button class="btn-blue" onclick="loadList()"><i class="fa-solid fa-arrow-down"></i> Load Sheet</button>
+      <button class="btn-b" onclick="loadList()"><i class="fa-solid fa-bolt"></i> Load Sheet</button>
     </div>
 
-    <!-- Sheet Card -->
-    <div id="sheetCard" class="box" style="display: none;">
-      <div class="stats">
-        <div class="stat"><b id="stTotal" style="color:#38bdf8">0</b>Total</div>
-        <div class="stat"><b id="stP" style="color:#4ade80">0</b>Present</div>
-        <div class="stat"><b id="stA" style="color:#f87171">0</b>Absent</div>
-        <div class="stat"><b id="stPct" style="color:#fbbf24">0%</b>Rate</div>
+    <!-- Sheet -->
+    <div id="sheetBox" class="box" style="display: none;">
+      <div class="s-head">
+        <span id="sheetTitle">Class Sheet</span>
+        <span id="sheetDate" style="color:#94a3b8;"></span>
       </div>
 
-      <div class="quick-bar">
-        <button class="q-btn" style="background:#22c55e25; color:#4ade80;" onclick="markAll('P')">All Present</button>
-        <button class="q-btn" style="background:#ef444425; color:#f87171;" onclick="markAll('A')">All Absent</button>
-        <button class="q-btn" style="background:#38bdf825; color:#38bdf8;" onclick="copyAllEmails()">Copy Emails</button>
+      <div class="lock-msg" id="lockMsg" style="display: none;">
+        <i class="fa-solid fa-lock"></i> Present (P) लॉक है। केवल Absent / Leave बदले जा सकते हैं।
+      </div>
+
+      <div class="stats">
+        <div class="st"><b id="stTotal" style="color:#38bdf8">0</b>Total</div>
+        <div class="st"><b id="stP" style="color:#4ade80">0</b>Present</div>
+        <div class="st"><b id="stA" style="color:#f87171">0</b>Absent</div>
+        <div class="st"><b id="stPct" style="color:#fbbf24">0%</b>Rate</div>
+      </div>
+
+      <div class="q-bar">
+        <button class="q-b" style="background:#22c55e20; color:#4ade80;" onclick="markAll('P')">All Present</button>
+        <button class="q-b" style="background:#ef444420; color:#f87171;" onclick="markAll('A')">All Absent</button>
+        <button class="q-b" style="background:#38bdf820; color:#38bdf8;" onclick="copyEmails()">Copy Emails</button>
       </div>
 
       <div id="studentList" class="list"></div>
 
-      <button id="saveBtn" class="btn-green" onclick="saveRecord()"><i class="fa-solid fa-floppy-disk"></i> Save Attendance</button>
+      <button id="saveBtn" class="btn-g" onclick="saveRecord()"><i class="fa-solid fa-floppy-disk"></i> Save Attendance</button>
     </div>
   </div>
 
-  <!-- Info Modal -->
-  <div class="modal-overlay" id="studentModal" onclick="this.style.display='none'">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-head">
+  <!-- Modal -->
+  <div class="modal" id="modal" onclick="this.style.display='none'">
+    <div class="m-body" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:700; color:#38bdf8;">
         <span>Student Details</span>
-        <span style="cursor:pointer;" onclick="document.getElementById('studentModal').style.display='none'">&times;</span>
+        <span style="cursor:pointer;" onclick="document.getElementById('modal').style.display='none'">&times;</span>
       </div>
-      <div id="modalBody"></div>
+      <div id="mContent"></div>
     </div>
   </div>
 
@@ -202,20 +173,34 @@
 
     let students = [];
 
+    // Auto Today Date
     window.onload = () => {
-      document.getElementById('attDate').value = new Date().toISOString().split('T')[0];
+      const d = new Date();
+      document.getElementById('attDate').value = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       toggleStream();
     };
 
     function toggleStream() {
-      const clsNum = document.getElementById('attClass').value;
-      document.getElementById('streamBox').style.display = (clsNum === '11' || clsNum === '12') ? 'block' : 'none';
+      const c = document.getElementById('attClass').value;
+      document.getElementById('streamBox').style.display = (c === '11' || c === '12') ? 'block' : 'none';
     }
 
-    function extractNum(val) {
-      if (!val) return '';
-      const m = val.toString().match(/\d+/);
+    function parseNum(v) {
+      const m = (v || '').toString().match(/\d+/);
       return m ? m[0] : '';
+    }
+
+    function parseSec(d) {
+      if (d.section) return d.section.toString().trim().toUpperCase();
+      const m = (d.class || d.className || d.classSection || '').toString().match(/[-\s]+([A-D])/i);
+      return m ? m[1].toUpperCase() : 'A';
+    }
+
+    function matchStream(d, target) {
+      if (target === 'ALL' || target === 'GENERAL') return true;
+      const raw = (d.stream || d.curriculum || d.subject || d.streamSubject || '').toString().toUpperCase();
+      if (!raw) return true;
+      return raw.includes(target) || (target === 'PCM' && raw.includes('PCM')) || (target === 'PCB' && raw.includes('PCB'));
     }
 
     async function loadList() {
@@ -226,84 +211,114 @@
 
       if (!date) return alert("तारीख चुनें!");
 
-      document.getElementById('sheetCard').style.display = 'block';
+      document.getElementById('sheetBox').style.display = 'block';
+      document.getElementById('sheetTitle').innerText = `Class ${cNum}th ${sec !== 'ALL' ? '- Sec ' + sec : ''} ${cNum >= 11 ? '(' + stream + ')' : ''}`;
+      document.getElementById('sheetDate').innerText = date;
+
       const container = document.getElementById('studentList');
-      container.innerHTML = '<div class="no-data">Loading...</div>';
+      container.innerHTML = '<div class="empty">लोड हो रहा है...</div>';
 
       const docId = `Class${cNum}_${sec}_${stream}_${date}`;
       let oldData = {};
+      let hasOld = false;
+
       try {
         const snap = await db.collection('attendance').doc(docId).get();
-        if (snap.exists) oldData = snap.data().students || {};
+        if (snap.exists && snap.data().students) {
+          oldData = snap.data().students;
+          hasOld = true;
+        }
       } catch(e) {}
 
-      db.collection('users').get().then(snapshot => {
-        students = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          if ((d.role || '').toLowerCase() === 'teacher' || (d.role || '').toLowerCase() === 'admin') return;
+      document.getElementById('lockMsg').style.display = hasOld ? 'flex' : 'none';
 
-          if (extractNum(d.class || d.className || '') !== cNum) return;
-          if ((d.section || 'A').toString().trim().toUpperCase() !== sec) return;
-
-          if (cNum === '11' || cNum === '12') {
-            const uStr = (d.stream || d.curriculum || '').toString().trim().toUpperCase();
-            if (uStr && uStr !== stream && !(uStr === 'SCIENCE' && (stream === 'PCM' || stream === 'PCB'))) return;
-          }
-
-          const roll = parseInt(d.rollNumber || d.roll || 0);
-          students.push({
-            id: doc.id,
-            name: d.fullName || d.name || `Student ${roll}`,
-            email: d.email || 'N/A',
-            phone: d.phone || d.mobile || 'N/A',
-            gender: d.gender || 'N/A',
-            class: `Class ${cNum}th`,
-            section: sec,
-            stream: d.stream || stream,
-            roll: roll,
-            status: oldData[doc.id] || oldData[roll] || 'P'
-          });
-        });
-
-        if (!students.length) {
-          container.innerHTML = '<div class="no-data">कोई छात्र नहीं मिला।</div>';
-          calc();
-          return;
+      let raw = [];
+      try {
+        const snap = await db.collection('users').get();
+        snap.forEach(d => raw.push({ id: d.id, ...d.data() }));
+        if (!raw.length) {
+          const sSnap = await db.collection('students').get();
+          sSnap.forEach(d => raw.push({ id: d.id, ...d.data() }));
         }
+      } catch(e) {}
 
-        students.sort((a,b) => a.roll - b.roll);
-        render();
-      }).catch(err => {
-        container.innerHTML = '<div class="no-data">डेटाबेस एरर!</div>';
+      students = [];
+      raw.forEach(d => {
+        const r = (d.role || '').toString().toLowerCase();
+        if (r === 'teacher' || r === 'admin') return;
+
+        if (parseNum(d.class || d.className || d.classSection) !== cNum) return;
+        const uSec = parseSec(d);
+        if (sec !== 'ALL' && uSec !== sec) return;
+        if ((cNum === '11' || cNum === '12') && !matchStream(d, stream)) return;
+
+        const roll = parseInt(d.rollNumber || d.roll || d.rollNo || 0);
+        const name = d.username || d.fullName || d.name || `Student ${roll || ''}`;
+        const prev = oldData[d.id] || oldData[roll];
+
+        students.push({
+          id: d.id,
+          name,
+          email: d.email || 'N/A',
+          phone: d.phone || d.mobile || 'N/A',
+          class: `Class ${cNum}th`,
+          section: uSec,
+          stream: d.stream || stream,
+          roll,
+          status: prev ? prev : 'P',
+          locked: (prev === 'P')
+        });
       });
+
+      if (!students.length) {
+        container.innerHTML = '<div class="empty">कोई छात्र नहीं मिला।</div>';
+        calc();
+        return;
+      }
+
+      students.sort((a, b) => (a.section === b.section) ? a.roll - b.roll : a.section.localeCompare(b.section));
+      render();
     }
 
     function render() {
       const container = document.getElementById('studentList');
       container.innerHTML = '';
+
       students.forEach((s, idx) => {
         const div = document.createElement('div');
         div.className = 'item';
+
+        const toggles = s.locked
+          ? `<span class="locked"><i class="fa-solid fa-lock"></i> P</span>`
+          : `<div class="toggles">
+              <button class="t-btn ${s.status === 'P' ? 'p' : ''}" onclick="setSt(${idx},'P')">P</button>
+              <button class="t-btn ${s.status === 'A' ? 'a' : ''}" onclick="setSt(${idx},'A')">A</button>
+              <button class="t-btn ${s.status === 'L' ? 'l' : ''}" onclick="setSt(${idx},'L')">L</button>
+             </div>`;
+
         div.innerHTML = `
-          <div class="item-info" onclick="showInfo(${idx})">
-            <span class="roll">${s.roll < 10 ? '0'+s.roll : s.roll}</span>
-            <span class="s-name">${s.name}</span>
-            <i class="fa-solid fa-circle-info" style="color:#64748b; font-size:11px;"></i>
+          <div class="info" onclick="showInfo(${idx})">
+            <span class="roll">${s.roll < 10 ? '0' + s.roll : s.roll}</span>
+            <span class="tag">${s.section}</span>
+            <span class="name">${s.name}</span>
           </div>
-          <div class="toggles">
-            <button class="t-btn ${s.status === 'P' ? 'p' : ''}" onclick="setSt(${idx},'P')">P</button>
-            <button class="t-btn ${s.status === 'A' ? 'a' : ''}" onclick="setSt(${idx},'A')">A</button>
-            <button class="t-btn ${s.status === 'L' ? 'l' : ''}" onclick="setSt(${idx},'L')">L</button>
-          </div>
+          ${toggles}
         `;
         container.appendChild(div);
       });
       calc();
     }
 
-    function setSt(idx, st) { students[idx].status = st; render(); }
-    function markAll(st) { students.forEach(s => s.status = st); render(); }
+    function setSt(idx, st) {
+      if (students[idx].locked) return;
+      students[idx].status = st;
+      render();
+    }
+
+    function markAll(st) {
+      students.forEach(s => { if (!s.locked) s.status = st; });
+      render();
+    }
 
     function calc() {
       const total = students.length;
@@ -312,27 +327,28 @@
       document.getElementById('stTotal').innerText = total;
       document.getElementById('stP').innerText = p;
       document.getElementById('stA').innerText = a;
-      document.getElementById('stPct').innerText = total ? Math.round((p/total)*100)+'%' : '0%';
+      document.getElementById('stPct').innerText = total ? Math.round((p / total) * 100) + '%' : '0%';
     }
 
     function showInfo(idx) {
       const s = students[idx];
-      document.getElementById('modalBody').innerHTML = `
-        <div class="row"><span>Name</span><b style="color:#38bdf8">${s.name}</b></div>
-        <div class="row"><span>Roll / Sec</span><b>${s.roll} (${s.section})</b></div>
-        <div class="row"><span>Class / Stream</span><b>${s.class} (${s.stream})</b></div>
-        <div class="row"><span>Email</span><b>${s.email} ${s.email !== 'N/A' ? `<button class="copy-tag" onclick="copy('${s.email}')">Copy</button>` : ''}</b></div>
-        <div class="row"><span>Phone</span><b>${s.phone}</b></div>
+      document.getElementById('mContent').innerHTML = `
+        <div class="m-row"><span>Name</span><b style="color:#38bdf8">${s.name}</b></div>
+        <div class="m-row"><span>Roll / Sec</span><b>${s.roll} (${s.section})</b></div>
+        <div class="m-row"><span>Class / Stream</span><b>${s.class} (${s.stream})</b></div>
+        <div class="m-row"><span>Status</span><b>${s.status} ${s.locked ? '(🔒 Locked)' : ''}</b></div>
+        <div class="m-row"><span>Email</span><b>${s.email} ${s.email !== 'N/A' ? `<button class="c-tag" onclick="copy('${s.email}')">Copy</button>` : ''}</b></div>
+        <div class="m-row"><span>Phone</span><b>${s.phone}</b></div>
       `;
-      document.getElementById('studentModal').style.display = 'flex';
+      document.getElementById('modal').style.display = 'flex';
     }
 
-    function copy(text) {
-      navigator.clipboard.writeText(text);
-      alert("Copied: " + text);
+    function copy(t) {
+      navigator.clipboard.writeText(t);
+      alert("Copied: " + t);
     }
 
-    function copyAllEmails() {
+    function copyEmails() {
       const list = students.map(s => s.email).filter(e => e && e !== 'N/A');
       if (!list.length) return alert("कोई ईमेल नहीं मिला!");
       navigator.clipboard.writeText(list.join(', '));
@@ -353,17 +369,22 @@
       const map = {};
       students.forEach(s => map[s.id || s.roll] = s.status);
       const p = students.filter(s => s.status === 'P').length;
+      const a = students.filter(s => s.status === 'A').length;
+      const l = students.filter(s => s.status === 'L').length;
       const docId = `Class${cNum}_${sec}_${stream}_${date}`;
 
       try {
         await db.collection('attendance').doc(docId).set({
           date, class: `Class ${cNum}th`, section: sec, stream,
           teacher: loggedInTeacher,
-          total: students.length, present: p,
+          total: students.length, present: p, absent: a, leave: l,
+          percentage: students.length ? Math.round((p / students.length) * 100) : 0,
           students: map,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
+
         alert("✅ अटेंडेंस सेव हो गई!");
+        loadList();
       } catch(e) {
         alert("त्रुटि हुई!");
       }
