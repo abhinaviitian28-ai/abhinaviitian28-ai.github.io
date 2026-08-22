@@ -8,26 +8,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Exact Notice Board Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #0f172a;
+            background-color: #070d19;
             color: #f8fafc;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            padding: 15px; 
+            padding: 16px 12px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #070d19 75%);
+            z-index: -1;
         }
 
         .container {
             width: 100%;
             max-width: 800px;
+            animation: fadeInContainer 0.35s ease-out;
+        }
+
+        @keyframes fadeInContainer {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Top Bar */
@@ -35,59 +53,84 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #1e293b;
-            padding: 12px 15px; 
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-            border: 1px solid #334155;
+            background: rgba(30, 41, 59, 0.75);
+            padding: 12px 16px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            margin-bottom: 16px;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            backdrop-filter: blur(10px);
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 17px; 
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
             color: #38bdf8;
+            letter-spacing: 0.3px;
         }
 
         .brand i {
-            background: rgba(56, 189, 248, 0.1);
-            padding: 8px; 
-            border-radius: 8px;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 8px 10px;
+            border-radius: 9px;
             color: #38bdf8;
-            font-size: 16px;
+            font-size: 15px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
         }
 
         .btn-dashboard {
-            background: #334155;
-            color: #f8fafc;
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
             text-decoration: none;
-            padding: 7px 12px; 
-            border-radius: 8px;
-            font-size: 13px; 
-            font-weight: 500;
+            padding: 7px 13px;
+            border-radius: 9px;
+            font-size: 12.5px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             cursor: pointer;
         }
 
         .btn-dashboard:hover {
-            background: #475569;
-            color: #ffffff;
+            background: rgba(56, 189, 248, 0.25);
+            transform: translateY(-1px);
         }
 
-        /* Controls Section (Search Only) */
-        .controls-card {
-            background: #1e293b;
-            border: 1px solid #334155;
+        /* Info Badge Bar */
+        .student-info-bar {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .student-info-bar b {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        /* Search Bar */
+        .controls-card {
+            background: rgba(30, 41, 59, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
         }
 
         .search-box {
@@ -96,45 +139,50 @@
 
         .search-box i {
             position: absolute;
-            left: 15px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: #64748b;
+            font-size: 13px;
         }
 
         .search-box input {
             width: 100%;
             background: #0f172a;
-            border: 1px solid #334155;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #f8fafc;
-            padding: 10px 15px 10px 40px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 10px 14px 10px 38px;
+            border-radius: 10px;
+            font-size: 12.5px;
             outline: none;
-            transition: 0.3s;
+            transition: all 0.25s ease;
         }
 
         .search-box input:focus {
             border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 50px 20px;
+            padding: 45px 20px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
         }
 
         .empty-state i {
-            font-size: 42px;
+            font-size: 38px;
             color: #38bdf8;
             margin-bottom: 12px;
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
         .empty-state h3 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .empty-state p {
@@ -142,74 +190,99 @@
             color: #94a3b8;
         }
 
-        /* List Container */
+        /* Assignment Cards List */
         .list-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        /* Card Style */
         .card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 18px;
+            background: rgba(30, 41, 59, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            animation: cardEntrance 0.3s ease-out;
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card:hover {
             transform: translateY(-2px);
-            border-color: #475569;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 10px;
+            gap: 8px;
         }
 
         .card-title-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .card-icon {
-            width: 38px;
-            height: 38px;
-            background: #0f172a;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 9px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 16px;
+            font-size: 15px;
             color: #38bdf8;
+            flex-shrink: 0;
+        }
+
+        .sub-pill {
+            font-size: 10px;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 2px 7px;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
         .card-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: #f8fafc;
+            margin-top: 3px;
+            line-height: 1.3;
         }
 
         .card-date {
-            background: #0f172a;
-            padding: 5px 10px;
-            border-radius: 6px;
+            background: rgba(234, 179, 8, 0.15);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            padding: 4px 8px;
+            border-radius: 7px;
             font-size: 11px;
-            color: #cbd5e1;
-            font-weight: 500;
+            color: #fbbf24;
+            font-weight: 600;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .card-preview {
-            font-size: 13px;
+            font-size: 12.5px;
             color: #cbd5e1;
             line-height: 1.5;
             display: -webkit-box;
@@ -217,15 +290,16 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-bottom: 12px;
+            padding-left: 2px;
         }
 
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid #334155;
-            padding-top: 12px;
-            font-size: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 10px;
+            font-size: 11.5px;
             color: #94a3b8;
         }
 
@@ -235,12 +309,17 @@
             gap: 6px;
         }
 
+        .publisher-info i {
+            color: #38bdf8;
+        }
+
         .read-more {
             color: #38bdf8;
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 4px;
+            font-size: 11.5px;
         }
 
         /* Modal Overlay */
@@ -250,59 +329,67 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(4px);
+            background: rgba(7, 13, 25, 0.85);
+            backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 15px;
+            padding: 14px;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #0f172a;
+            border: 1px solid rgba(56, 189, 248, 0.35);
             width: 100%;
-            max-width: 550px;
-            border-radius: 14px;
+            max-width: 520px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             position: relative;
         }
 
         .modal-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid #334155;
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            background: rgba(30, 41, 59, 0.5);
         }
 
         .modal-title-area h2 {
-            font-size: 18px;
+            font-size: 16px;
             color: #f8fafc;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            font-weight: 700;
         }
 
         .modal-meta-area {
             display: flex;
             gap: 12px;
-            font-size: 12px;
+            font-size: 11.5px;
             color: #94a3b8;
         }
 
         .close-btn {
-            background: #0f172a;
-            border: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: #cbd5e1;
             width: 28px;
             height: 28px;
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.2s ease;
         }
 
         .close-btn:hover {
@@ -312,12 +399,11 @@
         }
 
         .modal-body {
-            padding: 20px;
-            font-size: 14px;
+            padding: 18px;
+            font-size: 13px;
             color: #e2e8f0;
             line-height: 1.6;
-            white-space: pre-line;
-            max-height: 60vh;
+            max-height: 55vh;
             overflow-y: auto;
         }
         
@@ -326,49 +412,49 @@
         .modal-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 
         .modal-footer {
-            padding: 15px 20px;
-            background: #0f172a;
-            border-top: 1px solid #334155;
+            padding: 14px 18px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             justify-content: flex-end;
+            gap: 8px;
         }
 
         .btn-action {
-            background: #2563eb;
-            color: white;
-            border: none;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            border: 1px solid rgba(56, 189, 248, 0.4);
             padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: 0.3s;
+            transition: all 0.25s ease;
         }
 
         .btn-action:hover {
-            background: #1d4ed8;
+            background: #0284c7;
+            transform: translateY(-1px);
         }
 
         @media (max-width: 600px) {
             .card-header {
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
                 align-items: flex-start;
             }
-            .card-date {
-                align-self: flex-start;
-            }
-            .brand { font-size: 15px; }
-            .btn-dashboard { font-size: 12px; padding: 6px 10px; }
+            .brand { font-size: 14.5px; }
+            .btn-dashboard { font-size: 11.5px; padding: 6px 10px; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- Top Bar -->
         <div class="top-bar">
             <div class="brand">
                 <i class="fa-solid fa-book-open"></i>
@@ -379,29 +465,38 @@
             </a>
         </div>
 
+        <!-- Student Profile Status Pill -->
+        <div class="student-info-bar">
+            <span id="stInfoText"><i class="fa-solid fa-spinner fa-spin"></i> Detecting Profile...</span>
+            <span id="stCountText"><b>0</b> Assignments</span>
+        </div>
+
+        <!-- Search Box -->
         <div class="controls-card">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Search assignments by keyword..." onkeyup="handleSearch()">
+                <input type="text" id="searchInput" placeholder="Search assignments by title, subject or teacher..." onkeyup="handleSearch()">
             </div>
         </div>
 
+        <!-- Assignments Container -->
         <div class="list-container" id="assignmentsContainer">
             <div class="empty-state">
                 <i class="fa-solid fa-spinner fa-spin"></i>
                 <h3>Loading Assignments...</h3>
+                <p>Fetching your classroom updates.</p>
             </div>
         </div>
 
-        <!-- 🔘 5-5 Assignments Load Karne Ke Liye See More Button -->
-        <div style="text-align: center; margin: 25px 0;">
-            <button id="seeMoreAssignmentsBtn" onclick="loadMoreAssignments()" style="display: none; padding: 12px 26px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px;">
+        <!-- See More Button -->
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="seeMoreAssignmentsBtn" onclick="loadMoreAssignments()" style="display: none; padding: 10px 22px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; border-radius: 25px; font-weight: 600; cursor: pointer; transition: 0.25s; font-size: 12.5px;">
                 <i class="fa-solid fa-chevron-down"></i> See More Assignments
             </button>
         </div>
     </div>
 
-    <!-- Assignment Details Modal -->
+    <!-- Modal Overlay -->
     <div class="modal-overlay" id="assignmentModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -416,11 +511,11 @@
                 </button>
             </div>
             <div class="modal-body" id="modalContent">
-                Instructions and assignment content will appear here...
+                Instructions and details will appear here...
             </div>
             <div class="modal-footer">
                 <button class="btn-action" id="btnDownload" onclick="downloadAttachment()">
-                    <i class="fa-solid fa-paperclip"></i> Open / Download Attachment
+                    <i class="fa-solid fa-paperclip"></i> Open Attachment
                 </button>
             </div>
         </div>
@@ -430,8 +525,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        const loggedInUser = localStorage.getItem('loggedInUser') || localStorage.getItem('username') || '';
-        const userEmail = localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '';
+        const rawUser = localStorage.getItem('loggedInUser') || localStorage.getItem('username') || '';
+        const rawEmail = localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '';
+
+        const loggedInUser = rawUser.trim().toLowerCase();
+        const userEmail = rawEmail.trim().toLowerCase();
 
         if (!loggedInUser && !userEmail) {
             window.location.href = 'index.html';
@@ -459,7 +557,7 @@
         };
 
         let allMatchedAssignments = [];
-        let assignmentsData = [];
+        let displayedAssignments = [];
         let searchQuery = "";
         let currentAttachmentUrl = "";
         let visibleCount = 5;
@@ -467,19 +565,18 @@
         const container = document.getElementById('assignmentsContainer');
 
         function cleanClassNum(val) {
-            if (!val) return '';
+            if (!val) return '11';
             const m = String(val).match(/\d+/);
-            return m ? m[0] : String(val).trim().toUpperCase();
+            return m ? m[0] : String(val).trim();
         }
 
         function cleanSecName(val) {
-            if (!val) return 'ALL';
+            if (!val) return 'B';
             const raw = String(val).toUpperCase().trim();
             const m = raw.match(/\b([A-D])\b/);
             return m ? m[1] : (raw === 'ALL' ? 'ALL' : 'B');
         }
 
-        // Science / PCM / PCB / Commerce / Arts Matcher
         function matchStreams(asStream, stuStream) {
             const a = (asStream || 'GENERAL').toUpperCase().trim();
             const s = (stuStream || 'PCM').toUpperCase().trim();
@@ -488,16 +585,14 @@
             if (a === s) return true;
             if ((a === 'PCM' || a === 'PCB') && s.includes('SCIENCE')) return true;
             if ((s === 'PCM' || s === 'PCB') && a.includes('SCIENCE')) return true;
-            if (a.includes(s) || s.includes(a)) return true;
-            return false;
+            return a.includes(s) || s.includes(a);
         }
 
         async function initAssignmentPortal() {
             await fetchStudentProfile();
             listenAssignmentsLive();
         }
-
-        async function fetchStudentProfile() {
+async function fetchStudentProfile() {
             try {
                 let found = false;
                 const usersSnap = await db.collection('users').get();
@@ -506,8 +601,8 @@
                     const dEmail = (data.email || '').toLowerCase().trim();
                     const dName = (data.username || data.name || data.fullName || '').toLowerCase().trim();
 
-                    if ((userEmail && (dEmail === userEmail.toLowerCase().trim() || doc.id.toLowerCase() === userEmail.toLowerCase().trim())) || 
-                        (loggedInUser && dName === loggedInUser.toLowerCase().trim())) {
+                    if ((userEmail && (dEmail === userEmail || doc.id.toLowerCase() === userEmail)) || 
+                        (loggedInUser && dName === loggedInUser)) {
                         studentProfile.class = cleanClassNum(data.studentClass || data.class || data.className || '11');
                         studentProfile.section = cleanSecName(data.section || data.sec || data.studentClass || 'B');
                         studentProfile.stream = (data.stream || data.curriculum || data.subject || 'PCM').toUpperCase();
@@ -516,7 +611,7 @@
                 });
 
                 if (!found) {
-                    const stuSnap = await db.collection('students').where('name', '==', loggedInUser).get();
+                    const stuSnap = await db.collection('students').where('name', '==', rawUser).get();
                     if (!stuSnap.empty) {
                         const d = stuSnap.docs[0].data();
                         studentProfile.class = cleanClassNum(d.class || d.classSection || '11');
@@ -525,8 +620,10 @@
                     }
                 }
             } catch (err) {
-                console.warn("Using default profile 11th-B (PCM):", err);
+                console.warn("Using default profile fallback:", err);
             }
+
+            document.getElementById('stInfoText').innerHTML = `<i class="fa-solid fa-circle-check" style="color:#38bdf8"></i> Class <b>${studentProfile.class}th (Sec ${studentProfile.section})</b> • ${studentProfile.stream}`;
         }
 
         function listenAssignmentsLive() {
@@ -547,7 +644,7 @@
                     const asSec = cleanSecName(d.section || d.sec);
                     const mySec = cleanSecName(studentProfile.section);
 
-                    const isClassMatch = (!asClass || asClass === 'ALL' || asClass === myClass || myClass === '');
+                    const isClassMatch = (!asClass || asClass === 'ALL' || asClass === myClass);
                     const isSecMatch = (!asSec || asSec === 'ALL' || mySec === 'ALL' || asSec === mySec);
                     const isStreamMatch = matchStreams(d.stream, studentProfile.stream);
 
@@ -565,13 +662,14 @@
                     }
                 });
 
-                // Sort by creation time
+                // Safe Sorting by creation date
                 allMatchedAssignments.sort((a, b) => {
                     let timeA = a.createdAt ? (a.createdAt.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime()) : 0;
                     let timeB = b.createdAt ? (b.createdAt.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime()) : 0;
                     return timeB - timeA;
                 });
 
+                document.getElementById('stCountText').innerHTML = `<b>${allMatchedAssignments.length}</b> Assignments`;
                 applyPaginationAndRender();
             }, (error) => {
                 console.error("Firestore read error:", error);
@@ -580,7 +678,7 @@
         }
 
         function applyPaginationAndRender() {
-            assignmentsData = allMatchedAssignments.slice(0, visibleCount);
+            displayedAssignments = allMatchedAssignments.slice(0, visibleCount);
             renderList();
             updateSeeMoreButton();
         }
@@ -596,7 +694,7 @@
 
             if (allMatchedAssignments.length > visibleCount && searchQuery === '') {
                 btn.style.display = 'inline-block';
-                btn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> See More Assignments (${allMatchedAssignments.length - visibleCount} remaining)`;
+                btn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> See More (${allMatchedAssignments.length - visibleCount} remaining)`;
             } else {
                 btn.style.display = 'none';
             }
@@ -611,7 +709,7 @@
         function renderList() {
             container.innerHTML = "";
 
-            let source = (searchQuery === '') ? assignmentsData : allMatchedAssignments;
+            let source = (searchQuery === '') ? displayedAssignments : allMatchedAssignments;
 
             let filtered = source.filter(item => {
                 let textToSearch = `${item.title} ${item.subject} ${item.description} ${item.teacherName}`.toLowerCase();
@@ -623,7 +721,7 @@
                     <div class="empty-state">
                         <i class="fa-solid fa-bell-slash"></i>
                         <h3>No Assignments Published Yet</h3>
-                        <p>Class ${studentProfile.class}th (Sec ${studentProfile.section}) ke liye abhi koi assignment nahi hai.</p>
+                        <p>Aapki Class ke liye abhi koi assignment upload nahi hai.</p>
                     </div>
                 `;
                 return;
@@ -648,12 +746,12 @@
                                 <i class="fa-solid fa-file-lines"></i>
                             </div>
                             <div>
-                                <span style="font-size: 11px; color: #38bdf8; font-weight: 700; text-transform: uppercase;">${item.subject}</span>
-                                <h3 class="card-title" style="margin-top: 2px;">${item.title}</h3>
+                                <span class="sub-pill">${item.subject}</span>
+                                <h3 class="card-title">${item.title}</h3>
                             </div>
                         </div>
                         <div class="card-date">
-                            Due: ${displayDate}
+                            <i class="fa-solid fa-hourglass-half"></i> Due: ${displayDate}
                         </div>
                     </div>
                     <div class="card-preview">
@@ -687,14 +785,17 @@
             document.getElementById('modalTitle').innerText = item.title;
             document.getElementById('modalDate').innerText = displayDate;
             document.getElementById('modalContent').innerHTML = `
-                <div style="margin-bottom: 8px;"><b style="color: #38bdf8;">Subject:</b> ${item.subject}</div>
-                <div>${item.description}</div>
+                <div style="margin-bottom: 12px; display:flex; gap:8px; align-items:center;">
+                    <span class="sub-pill">${item.subject}</span>
+                    <span style="font-size: 11.5px; color: #94a3b8;"><i class="fa-solid fa-user-pen"></i> ${item.teacherName}</span>
+                </div>
+                <div style="line-height:1.6; white-space: pre-wrap;">${item.description}</div>
             `;
             
-            currentAttachmentUrl = item.link || "#";
+            currentAttachmentUrl = item.link || "";
             
             const btnDownload = document.getElementById('btnDownload');
-            if (currentAttachmentUrl && currentAttachmentUrl !== "#" && currentAttachmentUrl.trim() !== "") {
+            if (currentAttachmentUrl && currentAttachmentUrl.trim() !== "" && currentAttachmentUrl !== "#") {
                 btnDownload.style.display = 'inline-flex';
             } else {
                 btnDownload.style.display = 'none';
@@ -715,7 +816,7 @@
         }
 
         function downloadAttachment() {
-            if (currentAttachmentUrl && currentAttachmentUrl !== "#" && currentAttachmentUrl.trim() !== "") {
+            if (currentAttachmentUrl && currentAttachmentUrl.trim() !== "" && currentAttachmentUrl !== "#") {
                 window.open(currentAttachmentUrl, '_blank');
             } else {
                 alert("No attachment file was provided by the teacher for this assignment.");
