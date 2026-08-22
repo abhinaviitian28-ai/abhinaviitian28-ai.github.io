@@ -2,20 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Teacher Attendance Portal - SSKL</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
     
     body { 
       background-color: #070d19;
       min-height: 100vh; 
       color: #ffffff; 
-      overflow-x: hidden;
-      padding: 16px 14px;
+      padding: 12px 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -26,18 +25,18 @@
       content: '';
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #070d19 0%, #0f172a 50%, #1e293b 100%);
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #070d19 75%);
       z-index: -1;
     }
 
     .container {
       width: 100%;
-      max-width: 760px;
-      animation: fadeIn 0.2s ease-out;
+      max-width: 740px;
+      animation: softFadeIn 0.25s ease-out;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
+    @keyframes softFadeIn {
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -47,42 +46,50 @@
       justify-content: space-between;
       align-items: center;
       background: rgba(30, 41, 59, 0.75);
-      padding: 14px 18px;
-      border-radius: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
       border: 1px solid rgba(56, 189, 248, 0.25);
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       backdrop-filter: blur(8px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-      gap: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      gap: 8px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 15px;
+      gap: 8px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #38bdf8;
       line-height: 1.2;
     }
 
-    .brand i { font-size: 18px; flex-shrink: 0; }
+    .brand i {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      padding: 7px;
+      border-radius: 8px;
+      font-size: 13px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      flex-shrink: 0;
+    }
 
     .btn-dashboard {
       text-decoration: none;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 8px 14px;
-      border-radius: 10px;
+      padding: 7px 12px;
+      border-radius: 9px;
       font-weight: 600;
-      font-size: 12px;
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-size: 11.5px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      transition: background 0.15s ease;
+      gap: 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
     }
 
     .btn-dashboard:hover {
@@ -91,54 +98,43 @@
 
     /* Cards */
     .card {
-      background: rgba(30, 41, 59, 0.6);
+      background: rgba(30, 41, 59, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 16px 14px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
     }
 
     .card-title {
-      font-size: 13.5px;
+      font-size: 12.5px;
       font-weight: 700;
       color: #38bdf8;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .filter-grid {
+    /* Date Row Responsive Grid */
+    .date-search-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .input-group label {
-      font-size: 11.5px;
-      font-weight: 600;
-      color: #cbd5e1;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .form-input, .form-select {
       width: 100%;
-      padding: 10px 12px;
+      padding: 9px 10px;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 10px;
       color: #ffffff;
-      font-size: 12.5px;
+      font-size: 12px;
       outline: none;
       transition: border-color 0.15s ease;
     }
@@ -147,26 +143,61 @@
       border-color: #38bdf8;
     }
 
+    .date-quick-btn {
+      padding: 9px 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .date-quick-btn:hover {
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .input-group label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
     .btn-fetch {
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
       border: none;
-      border-radius: 12px;
+      border-radius: 11px;
       color: #ffffff;
-      font-size: 13.5px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: opacity 0.15s ease;
-      margin-top: 4px;
-    }
-
-    .btn-fetch:hover {
-      opacity: 0.92;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
     }
 
     /* Lock Alert Banner */
@@ -174,96 +205,89 @@
       background: rgba(56, 189, 248, 0.1);
       border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 11.5px;
+      padding: 8px 10px;
+      font-size: 11px;
       color: #38bdf8;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       line-height: 1.4;
     }
 
-    /* Sheet Header Info */
+    /* Sheet Header */
     .sheet-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 12.5px;
+      font-size: 12px;
       color: #38bdf8;
       font-weight: 600;
     }
 
-    /* Stats Overview Bar */
+    /* Stats Bar */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .stat-box {
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 10px 6px;
+      border-radius: 9px;
+      padding: 8px 4px;
       text-align: center;
     }
 
-    .stat-val { font-size: 16px; font-weight: 700; }
-    .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+    .stat-val { font-size: 15px; font-weight: 700; }
+    .stat-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
 
     .val-total { color: #38bdf8; }
     .val-present { color: #4ade80; }
     .val-absent { color: #f87171; }
-    .val-percent { color: #fbbf24; }
+    .val-neutral { color: #94a3b8; }
 
-    /* Quick Actions */
+    /* Quick Action Controls */
     .quick-actions {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .btn-quick {
-      padding: 6px 12px;
+      padding: 7px 6px;
       border-radius: 8px;
-      font-size: 11.5px;
+      font-size: 10.5px;
       font-weight: 600;
       cursor: pointer;
       border: 1px solid transparent;
-      transition: background 0.15s ease;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 5px;
+      white-space: nowrap;
     }
 
     .btn-all-p { background: rgba(74, 222, 128, 0.15); color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
-    .btn-all-p:hover { background: rgba(74, 222, 128, 0.25); }
-
     .btn-all-a { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
-    .btn-all-a:hover { background: rgba(239, 68, 68, 0.25); }
-
+    .btn-all-clear { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.3); }
     .btn-copy-mail { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
-    .btn-copy-mail:hover { background: rgba(56, 189, 248, 0.25); }
 
     /* Student List */
     .attendance-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
-      max-height: 440px;
+      gap: 7px;
+      margin-bottom: 14px;
+      max-height: 380px;
       overflow-y: auto;
-      padding-right: 4px;
     }
-
-    .attendance-list::-webkit-scrollbar { width: 5px; }
-    .attendance-list::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
 
     .student-item {
       display: flex;
@@ -271,36 +295,30 @@
       align-items: center;
       background: rgba(15, 23, 42, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 10px 14px;
-      border-radius: 12px;
-      gap: 8px;
-      transition: border-color 0.15s ease;
-    }
-
-    .student-item:hover {
-      border-color: rgba(56, 189, 248, 0.35);
+      padding: 8px 10px;
+      border-radius: 11px;
+      gap: 6px;
     }
 
     .student-info {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       min-width: 0;
+      flex: 1;
       cursor: pointer;
     }
-
-    .student-info:hover .student-name { color: #38bdf8; }
 
     .roll-badge {
       background: rgba(56, 189, 248, 0.15);
       color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 3px 7px;
-      border-radius: 6px;
-      font-size: 11.5px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 11px;
       font-weight: 700;
       flex-shrink: 0;
-      min-width: 30px;
+      min-width: 26px;
       text-align: center;
     }
 
@@ -308,48 +326,46 @@
       background: rgba(168, 85, 247, 0.15);
       color: #c084fc;
       border: 1px solid rgba(168, 85, 247, 0.3);
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-size: 9.5px;
       font-weight: 700;
       flex-shrink: 0;
     }
 
     .student-name {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: color 0.15s ease;
     }
 
     .btn-info-icon {
       color: #64748b;
-      font-size: 12px;
+      font-size: 11px;
       margin-left: 2px;
     }
 
     /* Toggles */
     .toggle-group {
       display: flex;
-      gap: 5px;
+      gap: 4px;
       align-items: center;
       flex-shrink: 0;
     }
 
     .toggle-btn {
-      width: 32px;
-      height: 30px;
-      border-radius: 7px;
+      width: 29px;
+      height: 28px;
+      border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       background: rgba(30, 41, 59, 0.6);
       color: #94a3b8;
       font-weight: 700;
-      font-size: 11.5px;
+      font-size: 10.5px;
       cursor: pointer;
-      transition: background 0.15s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -363,42 +379,41 @@
       background: rgba(34, 197, 94, 0.15);
       color: #4ade80;
       border: 1px solid rgba(34, 197, 94, 0.35);
-      padding: 5px 10px;
-      border-radius: 7px;
-      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 10px;
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
-    .btn-save {
+    /* Elegant Soft Save Button */
+    .btn-save-smooth {
       width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-      border: none;
-      border-radius: 12px;
-      color: #ffffff;
-      font-size: 13.5px;
-      font-weight: 700;
+      padding: 11px 14px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.35) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      border-radius: 11px;
+      color: #6ee7b7;
+      font-size: 12.5px;
+      font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: opacity 0.15s ease;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
     }
 
-    .btn-save:hover {
-      opacity: 0.92;
-    }
+    .btn-save-smooth:active { transform: scale(0.98); }
 
     .no-data {
       text-align: center;
-      padding: 24px 10px;
+      padding: 20px 8px;
       color: #94a3b8;
-      font-size: 12.5px;
-      line-height: 1.5;
+      font-size: 12px;
+      line-height: 1.4;
     }
 
     /* Modal */
@@ -411,16 +426,16 @@
       align-items: center;
       z-index: 1000;
       padding: 14px;
+      backdrop-filter: blur(4px);
     }
 
     .modal-content {
       background: #0f172a;
       border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 16px;
+      border-radius: 14px;
       width: 100%;
-      max-width: 380px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      max-width: 340px;
+      padding: 16px;
     }
 
     .modal-header {
@@ -428,9 +443,9 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #334155;
-      padding-bottom: 10px;
-      margin-bottom: 12px;
-      font-size: 14px;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
       font-weight: 700;
       color: #38bdf8;
     }
@@ -447,9 +462,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 7px 0;
+      padding: 6px 0;
       border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 12px;
+      font-size: 11.5px;
     }
 
     .detail-label { color: #94a3b8; }
@@ -459,22 +474,32 @@
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.3);
       color: #38bdf8;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
-      font-size: 10px;
+      font-size: 9.5px;
       cursor: pointer;
-      margin-left: 5px;
+      margin-left: 4px;
+    }
+
+    @media (max-width: 480px) {
+      .filter-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      #streamBox {
+        grid-column: span 2;
+      }
     }
   </style>
 </head>
 <body>
 
   <div class="container">
+    
     <!-- Top Bar -->
     <div class="top-bar">
       <div class="brand">
         <i class="fa-solid fa-clipboard-user"></i>
-        <span>Teacher Attendance Management</span>
+        <span>Teacher Attendance</span>
       </div>
       <a href="teacher_dashboard.html" class="btn-dashboard">
         <i class="fa-solid fa-house"></i> Dashboard
@@ -484,15 +509,17 @@
     <!-- Filter Card -->
     <div class="card">
       <div class="card-title">
-        <i class="fa-solid fa-calendar-days"></i> Select Date & Class Criteria
+        <i class="fa-solid fa-calendar-days"></i> Select Date & Criteria
+      </div>
+
+      <!-- Compact 3-Column Date Row -->
+      <div class="date-search-row">
+        <input type="date" id="attDate" class="form-input">
+        <button class="date-quick-btn" onclick="setQuickDate(0)"><i class="fa-solid fa-bolt"></i> Today</button>
+        <button class="date-quick-btn" onclick="setQuickDate(-1)"><i class="fa-solid fa-clock-rotate-left"></i> Y'day</button>
       </div>
 
       <div class="filter-grid">
-        <div class="input-group">
-          <label>Attendance Date (Calendar)</label>
-          <input type="date" id="attDate" class="form-input">
-        </div>
-
         <div class="input-group">
           <label>Class</label>
           <select id="attClass" class="form-select" onchange="toggleStream()">
@@ -506,11 +533,11 @@
         <div class="input-group">
           <label>Section</label>
           <select id="attSection" class="form-select">
-            <option value="ALL">All Sections</option>
-            <option value="A">Section A</option>
-            <option value="B" selected>Section B</option>
-            <option value="C">Section C</option>
-            <option value="D">Section D</option>
+            <option value="ALL">All Sec</option>
+            <option value="A">Sec A</option>
+            <option value="B" selected>Sec B</option>
+            <option value="C">Sec C</option>
+            <option value="D">Sec D</option>
           </select>
         </div>
 
@@ -530,20 +557,20 @@
       </button>
     </div>
 
-    <!-- Sheet Card -->
+    <!-- Attendance Sheet Container -->
     <div id="sheetCard" class="card" style="display: none;">
       <div class="sheet-meta">
         <span id="sheetTitle"><i class="fa-solid fa-layer-group"></i> Class Sheet</span>
-        <span id="sheetDate" style="color: #94a3b8; font-size: 11.5px;"></span>
+        <span id="sheetDate" style="color: #94a3b8; font-size: 11px;"></span>
       </div>
 
       <!-- Lock Notice -->
       <div class="lock-notice" id="lockNotice" style="display: none;">
         <i class="fa-solid fa-lock"></i>
-        <span>पहले से <b>Present (P)</b> छात्रों का रिकॉर्ड लॉक है। केवल <b>Absent / Leave</b> को बदला जा सकता है।</span>
+        <span>पहले से <b>Present (P)</b> छात्रों का रिकॉर्ड सुरक्षित (Locked) है।</span>
       </div>
 
-      <!-- Stats -->
+      <!-- 4 Stats Boxes -->
       <div class="stats-bar">
         <div class="stat-box">
           <div class="stat-val val-total" id="stTotal">0</div>
@@ -558,30 +585,31 @@
           <div class="stat-label">Absent</div>
         </div>
         <div class="stat-box">
-          <div class="stat-val val-percent" id="stPct">0%</div>
-          <div class="stat-label">Rate</div>
+          <div class="stat-val val-neutral" id="stUnset">0</div>
+          <div class="stat-label">General</div>
         </div>
       </div>
 
-      <!-- Actions -->
+      <!-- 2x2 Quick Actions Grid -->
       <div class="quick-actions">
-        <button class="btn-quick btn-all-p" onclick="markAllUnlocked('P')"><i class="fa-solid fa-check"></i> Mark Remaining Present</button>
-        <button class="btn-quick btn-all-a" onclick="markAllUnlocked('A')"><i class="fa-solid fa-xmark"></i> Mark Remaining Absent</button>
-        <button class="btn-quick btn-copy-mail" onclick="copyAllEmails()"><i class="fa-solid fa-envelope"></i> Copy All Emails</button>
+        <button class="btn-quick btn-all-p" onclick="markAllUnlocked('P')"><i class="fa-solid fa-check"></i> All Present</button>
+        <button class="btn-quick btn-all-a" onclick="markAllUnlocked('A')"><i class="fa-solid fa-xmark"></i> All Absent</button>
+        <button class="btn-quick btn-all-clear" onclick="markAllUnlocked('')"><i class="fa-solid fa-rotate-left"></i> General (Reset)</button>
+        <button class="btn-quick btn-copy-mail" onclick="copyAllEmails()"><i class="fa-solid fa-envelope"></i> Copy Mails</button>
       </div>
 
       <!-- Student List -->
       <div id="studentList" class="attendance-list"></div>
 
-      <!-- Save Button -->
-      <button id="saveBtn" class="btn-save" onclick="saveRecord()">
+      <!-- Save & Submit Button -->
+      <button id="saveBtn" class="btn-save-smooth" onclick="saveRecord()">
         <i class="fa-solid fa-cloud-arrow-up"></i> Save & Submit Attendance
       </button>
     </div>
 
   </div>
 
-  <!-- Modal -->
+  <!-- Student Info Modal -->
   <div class="modal-overlay" id="studentModal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -614,32 +642,34 @@
     let students = [];
 
     window.onload = () => {
-      const today = new Date();
-      const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-      document.getElementById('attDate').value = localDate;
+      setQuickDate(0);
       toggleStream();
     };
+
+    function setQuickDate(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const localDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      document.getElementById('attDate').value = localDate;
+    }
 
     function toggleStream() {
       const clsNum = document.getElementById('attClass').value;
       document.getElementById('streamBox').style.display = (clsNum === '11' || clsNum === '12') ? 'flex' : 'none';
     }
 
-    // Number extraction e.g. "11th" -> "11"
     function extractNum(val) {
       if (!val) return '';
       const m = val.toString().match(/\d+/);
       return m ? m[0] : '';
     }
 
-    // Section extraction e.g. "B" or "Section B" -> "B"
     function extractSec(d) {
       const raw = (d.section || d.sec || d.studentClass || d.class || '').toString().toUpperCase();
       const match = raw.match(/\b([A-D])\b/);
       return match ? match[1] : 'A';
     }
 
-    // Stream match: Handles "Science", "Science(PCM)", "PCM"
     function matchStream(d, targetStream) {
       if (targetStream === 'ALL' || targetStream === 'GENERAL') return true;
       const raw = (d.stream || d.curriculum || d.subject || '').toString().toUpperCase();
@@ -651,7 +681,6 @@
       if (targetStream === 'ARTS' && raw.includes('ARTS')) return true;
       return false;
     }
-
     async function loadList() {
       const date = document.getElementById('attDate').value;
       const selectedClassNum = extractNum(document.getElementById('attClass').value);
@@ -665,12 +694,12 @@
       const sheetCard = document.getElementById('sheetCard');
       sheetCard.style.display = 'block';
 
-      document.getElementById('sheetTitle').innerHTML = `<i class="fa-solid fa-layer-group"></i> Class ${selectedClassNum}th ${selectedSec !== 'ALL' ? '- Sec ' + selectedSec : '(All Sec)'} ${selectedClassNum >= 11 ? '(' + selectedStream + ')' : ''}`;
+      document.getElementById('sheetTitle').innerHTML = `<i class="fa-solid fa-layer-group"></i> Class ${selectedClassNum}th ${selectedSec !== 'ALL' ? '- Sec ' + selectedSec : ''}`;
       document.getElementById('sheetDate').innerText = `Date: ${date}`;
 
       const container = document.getElementById('studentList');
       container.innerHTML = '<div class="no-data"><i class="fa-solid fa-spinner fa-spin"></i> डेटा लोड हो रहा है...</div>';
-            // 1. Fetch Existing Attendance
+
       const docId = `Class${selectedClassNum}_${selectedSec}_${selectedStream}_${date}`;
       let oldData = {};
       let hasOld = false;
@@ -685,7 +714,6 @@
 
       document.getElementById('lockNotice').style.display = hasOld ? 'flex' : 'none';
 
-      // 2. Fetch Users from 'users'
       let rawUsers = [];
       try {
         const uSnap = await db.collection('users').get();
@@ -697,29 +725,25 @@
       students = [];
 
       rawUsers.forEach(d => {
-        const role = (d.role || '').toString().toLowerCase();
+        const role = (d.role || d.user_role || '').toString().toLowerCase();
         if (role === 'teacher' || role === 'admin') return;
 
-        // Matches studentClass: "11th" or class: "11th Class"
         const userClassStr = (d.studentClass || d.class || d.className || '').toString();
         const userClassNum = extractNum(userClassStr);
         if (userClassNum && userClassNum !== selectedClassNum) return;
 
-        // Section Match
         const userSec = extractSec(d);
         if (selectedSec !== 'ALL' && userSec !== selectedSec) return;
 
-        // Stream Match
         if (selectedClassNum === '11' || selectedClassNum === '12') {
           if (!matchStream(d, selectedStream)) return;
         }
 
-        // Student Data (handles rollNo, username)
         const roll = parseInt(d.rollNo || d.rollNumber || d.roll || 0);
         const name = d.username || d.fullName || d.name || `Student ${roll || ''}`;
-        const prevStatus = oldData[d.id] || oldData[roll];
+        const prevStatus = oldData[d.id] || oldData[d.email] || oldData[roll];
 
-        const finalStatus = prevStatus ? prevStatus : 'P';
+        const finalStatus = prevStatus ? prevStatus : '';
         const isLocked = (prevStatus === 'P');
 
         students.push({
@@ -740,9 +764,8 @@
       if (students.length === 0) {
         container.innerHTML = `
           <div class="no-data">
-            <i class="fa-solid fa-circle-exclamation" style="font-size: 20px; color: #f87171; margin-bottom: 6px; display: block;"></i>
-            इस क्राइटेरिया (Class ${selectedClassNum}th, Sec ${selectedSec}, ${selectedStream}) में कोई छात्र नहीं मिला।<br>
-            <small style="color:#64748b;">(नोट: अभिनव Section B में है, इसलिए Section B चुनकर देखें)</small>
+            <i class="fa-solid fa-circle-exclamation" style="font-size: 18px; color: #f87171; margin-bottom: 4px; display: block;"></i>
+            कोई छात्र नहीं मिला।
           </div>
         `;
         calc();
@@ -768,22 +791,22 @@
         let toggleHtml = '';
         if (s.locked) {
           toggleHtml = `
-            <div class="locked-badge" title="Already marked Present (Locked)">
-              <i class="fa-solid fa-lock"></i> Present
+            <div class="locked-badge" title="Locked">
+              <i class="fa-solid fa-lock"></i> P
             </div>
           `;
         } else {
           toggleHtml = `
             <div class="toggle-group">
-              <button class="toggle-btn ${s.status === 'P' ? 'active-p' : ''}" onclick="setSt(${idx},'P')">P</button>
-              <button class="toggle-btn ${s.status === 'A' ? 'active-a' : ''}" onclick="setSt(${idx},'A')">A</button>
-              <button class="toggle-btn ${s.status === 'L' ? 'active-l' : ''}" onclick="setSt(${idx},'L')">L</button>
+              <button class="toggle-btn ${s.status === 'P' ? 'active-p' : ''}" onclick="toggleSt(${idx},'P')">P</button>
+              <button class="toggle-btn ${s.status === 'A' ? 'active-a' : ''}" onclick="toggleSt(${idx},'A')">A</button>
+              <button class="toggle-btn ${s.status === 'L' ? 'active-l' : ''}" onclick="toggleSt(${idx},'L')">L</button>
             </div>
           `;
         }
 
         div.innerHTML = `
-          <div class="student-info" onclick="showInfo(${idx})" title="Click to view details & email">
+          <div class="student-info" onclick="showInfo(${idx})">
             <span class="roll-badge">${s.roll < 10 ? '0' + s.roll : s.roll}</span>
             <span class="sec-badge">Sec ${s.section}</span>
             <span class="student-name">${s.name}</span>
@@ -797,9 +820,9 @@
       calc();
     }
 
-    function setSt(idx, st) {
+    function toggleSt(idx, st) {
       if (students[idx].locked) return;
-      students[idx].status = st;
+      students[idx].status = (students[idx].status === st) ? '' : st;
       render();
     }
 
@@ -814,25 +837,30 @@
       const total = students.length;
       const p = students.filter(s => s.status === 'P').length;
       const a = students.filter(s => s.status === 'A').length;
+      const unset = students.filter(s => !s.status).length;
+
       document.getElementById('stTotal').innerText = total;
       document.getElementById('stP').innerText = p;
       document.getElementById('stA').innerText = a;
-      document.getElementById('stPct').innerText = total ? Math.round((p / total) * 100) + '%' : '0%';
+      document.getElementById('stUnset').innerText = unset;
     }
 
     function showInfo(idx) {
       const s = students[idx];
+      let displayStatus = 'General (Unmarked)';
+      if (s.status === 'P') displayStatus = 'Present';
+      else if (s.status === 'A') displayStatus = 'Absent';
+      else if (s.status === 'L') displayStatus = 'Leave';
+
       document.getElementById('modalBody').innerHTML = `
         <div class="detail-row"><span>Full Name</span><b style="color:#38bdf8">${s.name}</b></div>
         <div class="detail-row"><span>Roll Number</span><b>${s.roll}</b></div>
         <div class="detail-row"><span>Class & Sec</span><b>${s.class} (Sec ${s.section})</b></div>
-        <div class="detail-row"><span>Stream</span><b>${s.stream}</b></div>
-        <div class="detail-row"><span>Status</span><b>${s.status === 'P' ? 'Present' : (s.status === 'A' ? 'Absent' : 'Leave')} ${s.locked ? '(🔒 Locked)' : ''}</b></div>
-        <div class="detail-row" style="background: rgba(56, 189, 248, 0.08); padding: 8px; border-radius: 6px; margin-top: 6px;">
-          <span><i class="fa-solid fa-envelope"></i> Email</span>
+        <div class="detail-row"><span>Status</span><b>${displayStatus}</b></div>
+        <div class="detail-row" style="background: rgba(56, 189, 248, 0.08); padding: 6px; border-radius: 6px; margin-top: 5px;">
+          <span>Email</span>
           <b>${s.email} ${s.email !== 'N/A' ? `<button class="copy-tag" onclick="copy('${s.email}')">Copy</button>` : ''}</b>
         </div>
-        <div class="detail-row"><span><i class="fa-solid fa-phone"></i> Phone</span><b>${s.phone}</b></div>
       `;
       document.getElementById('studentModal').style.display = 'flex';
     }
@@ -864,7 +892,14 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
       const map = {};
-      students.forEach(s => map[s.id || s.roll] = s.status);
+      students.forEach(s => {
+        if (s.status) {
+          map[s.id] = s.status;
+          if (s.email && s.email !== 'N/A') map[s.email] = s.status;
+          if (s.roll) map[s.roll] = s.status;
+        }
+      });
+
       const p = students.filter(s => s.status === 'P').length;
       const a = students.filter(s => s.status === 'A').length;
       const l = students.filter(s => s.status === 'L').length;
@@ -893,6 +928,7 @@
         console.error("Save error:", e);
         alert("अटेंडेंस सेव करने में त्रुटि हुई!");
       }
+
       btn.disabled = false; 
       btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Save & Submit Attendance';
     }
