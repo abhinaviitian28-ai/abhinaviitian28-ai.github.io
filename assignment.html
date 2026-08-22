@@ -479,6 +479,19 @@
             return m ? m[1] : (raw === 'ALL' ? 'ALL' : 'B');
         }
 
+        // Science / PCM / PCB / Commerce / Arts Matcher
+        function matchStreams(asStream, stuStream) {
+            const a = (asStream || 'GENERAL').toUpperCase().trim();
+            const s = (stuStream || 'PCM').toUpperCase().trim();
+
+            if (a === 'ALL' || a === 'GENERAL' || s === 'ALL' || s === 'GENERAL') return true;
+            if (a === s) return true;
+            if ((a === 'PCM' || a === 'PCB') && s.includes('SCIENCE')) return true;
+            if ((s === 'PCM' || s === 'PCB') && a.includes('SCIENCE')) return true;
+            if (a.includes(s) || s.includes(a)) return true;
+            return false;
+        }
+
         async function initAssignmentPortal() {
             await fetchStudentProfile();
             listenAssignmentsLive();
@@ -486,7 +499,6 @@
 
         async function fetchStudentProfile() {
             try {
-                // Check both users and students collection
                 let found = false;
                 const usersSnap = await db.collection('users').get();
                 usersSnap.forEach(doc => {
@@ -513,7 +525,7 @@
                     }
                 }
             } catch (err) {
-                console.warn("Using fallback profile:", err);
+                console.warn("Using default profile 11th-B (PCM):", err);
             }
         }
 
@@ -529,19 +541,15 @@
                 snapshot.forEach(doc => {
                     const d = doc.data();
 
-                    // Matching Firestore fields shown in screenshot
                     const asClass = cleanClassNum(d.classNum || d.class);
                     const myClass = cleanClassNum(studentProfile.class);
 
                     const asSec = cleanSecName(d.section || d.sec);
                     const mySec = cleanSecName(studentProfile.section);
 
-                    const asStream = (d.stream || 'GENERAL').toUpperCase();
-                    const myStream = (studentProfile.stream || 'PCM').toUpperCase();
-
                     const isClassMatch = (!asClass || asClass === 'ALL' || asClass === myClass || myClass === '');
                     const isSecMatch = (!asSec || asSec === 'ALL' || mySec === 'ALL' || asSec === mySec);
-                    const isStreamMatch = (!asStream || asStream === 'ALL' || asStream === 'GENERAL' || myStream.includes(asStream) || asStream.includes(myStream));
+                    const isStreamMatch = matchStreams(d.stream, studentProfile.stream);
 
                     if (isClassMatch && isSecMatch && isStreamMatch) {
                         allMatchedAssignments.push({
@@ -557,7 +565,7 @@
                     }
                 });
 
-                // Safe sorting by creation date/timestamp
+                // Sort by creation time
                 allMatchedAssignments.sort((a, b) => {
                     let timeA = a.createdAt ? (a.createdAt.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime()) : 0;
                     let timeB = b.createdAt ? (b.createdAt.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime()) : 0;
@@ -615,7 +623,7 @@
                     <div class="empty-state">
                         <i class="fa-solid fa-bell-slash"></i>
                         <h3>No Assignments Published Yet</h3>
-                        <p>Aapki Class ke liye koi naya assignment nahi hai.</p>
+                        <p>Class ${studentProfile.class}th (Sec ${studentProfile.section}) ke liye abhi koi assignment nahi hai.</p>
                     </div>
                 `;
                 return;
