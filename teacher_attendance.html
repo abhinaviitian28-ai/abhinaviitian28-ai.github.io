@@ -556,7 +556,7 @@
         <i class="fa-solid fa-users-viewfinder"></i> Load Student Sheet
       </button>
     </div>
-        <!-- Attendance Sheet Container -->
+<!-- Attendance Sheet Container -->
     <div id="sheetCard" class="card" style="display: none;">
       <div class="sheet-meta">
         <span id="sheetTitle"><i class="fa-solid fa-layer-group"></i> Class Sheet</span>
@@ -589,12 +589,20 @@
         </div>
       </div>
 
-      <!-- Quick Action Controls -->
-      <div class="quick-actions">
-        <button class="btn-quick btn-rem-p" onclick="markRemaining('P')"><i class="fa-solid fa-check"></i> Mark Remaining Present</button>
-        <button class="btn-quick btn-rem-a" onclick="markRemaining('A')"><i class="fa-solid fa-xmark"></i> Mark Remaining Absent</button>
-        <button class="btn-quick btn-reset-gen" onclick="resetToGeneral()"><i class="fa-solid fa-rotate-left"></i> Reset to General</button>
-        <button class="btn-quick btn-copy-mail" onclick="copyAllEmails()"><i class="fa-solid fa-envelope"></i> Copy Emails</button>
+      <!-- Quick Actions (Pure Dark Theme Styled) -->
+      <div class="quick-actions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;">
+        <button type="button" class="btn-quick" style="background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); padding: 9px 8px; border-radius: 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="markRemaining('P')">
+          <i class="fa-solid fa-check"></i> Mark Remaining Present
+        </button>
+        <button type="button" class="btn-quick" style="background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); padding: 9px 8px; border-radius: 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="markRemaining('A')">
+          <i class="fa-solid fa-xmark"></i> Mark Remaining Absent
+        </button>
+        <button type="button" class="btn-quick" style="background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); padding: 9px 8px; border-radius: 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="resetToGeneral()">
+          <i class="fa-solid fa-rotate-left"></i> Reset to General
+        </button>
+        <button type="button" class="btn-quick" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); padding: 9px 8px; border-radius: 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="copyAllEmails()">
+          <i class="fa-solid fa-envelope"></i> Copy Emails
+        </button>
       </div>
 
       <!-- Student List -->
