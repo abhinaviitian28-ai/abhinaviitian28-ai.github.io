@@ -538,12 +538,11 @@
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
     </div>
-
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // Session Check
+  // 1. Session Check
   const loggedInUser = localStorage.getItem('loggedInUser') || localStorage.getItem('username');
   const userEmail = (localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '').toLowerCase().trim();
 
@@ -551,7 +550,7 @@
     window.location.href = 'index.html';
   }
 
-  // 1. Firebase Configuration Keys
+  // 2. Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
@@ -562,11 +561,16 @@
     measurementId: "G-TQKTRTKBEJ"
   };
 
-  // 2. Start Firebase
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   const db = firebase.firestore();
+
+  // Fix 400 Bad Request
+  db.settings({
+    experimentalForceLongPolling: true,
+    merge: true
+  });
 
   let studentProfile = {
     docId: '',
@@ -576,16 +580,14 @@
   };
   
   let attendanceData = {};
-  let attendanceUnsubscribe = null;
   const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-  // 3. Initialize Portal
   async function initAttendancePortal() {
     await fetchStudentProfile();
-    setupAttendanceListener();
+    await loadAttendanceOnce();
   }
 
-  // Fetch Student Profile from 'users' collection
+  // Match student identity from 'users'
   async function fetchStudentProfile() {
     try {
       const uSnap = await db.collection('users').get();
@@ -602,15 +604,14 @@
         }
       });
     } catch (err) {
-      console.log("Error fetching student profile:", err);
+      console.warn("Profile fetch error:", err);
     }
   }
 
-  // 4. Firebase Real-time Listener (Synced with Teacher Attendance Model)
-  function setupAttendanceListener() {
-    if (attendanceUnsubscribe) attendanceUnsubscribe();
-
-    attendanceUnsubscribe = db.collection("attendance").onSnapshot((snapshot) => {
+  // Fetch Attendance matching teacher portal structure
+  async function loadAttendanceOnce() {
+    try {
+      const snapshot = await db.collection("attendance").get();
       attendanceData = {};
 
       let grandTotalWorkingDays = 0;
@@ -623,7 +624,7 @@
 
         let status = null;
 
-        // Match student by Firestore Doc ID, Email, Roll No, or Username
+        // Multi-check: Document ID, Email, Roll No, or Username
         if (studentProfile.docId && sMap[studentProfile.docId]) {
           status = sMap[studentProfile.docId];
         } else if (studentProfile.email && sMap[studentProfile.email]) {
@@ -677,9 +678,9 @@
 
       updateOverviewStats(grandTotalWorkingDays, grandPresent, grandAbsent);
       initAttendanceView();
-    }, (error) => {
-      console.error("Firebase attendance error:", error);
-    });
+    } catch (error) {
+      console.error("Attendance fetch error:", error);
+    }
   }
 
   function initAttendanceView() {
@@ -700,7 +701,6 @@
       return;
     }
 
-    // Sort newest month first
     monthNames.sort((a, b) => {
       const itemA = attendanceData[a];
       const itemB = attendanceData[b];
@@ -709,7 +709,6 @@
 
     const currentMonthKey = monthNames[0];
 
-    // Section 1: Current Month
     let html = `
       <div class="section-title">
         <i class="fa-solid fa-clock"></i> Current Academic Month
@@ -719,7 +718,6 @@
       </div>
     `;
 
-    // Section 2: Previous Months
     if (monthNames.length > 1) {
       html += `
         <div class="section-title">
@@ -854,5 +852,5 @@
   window.onload = initAttendancePortal;
 </script>
 
-</body>
+    </body>
 </html>  
