@@ -539,317 +539,563 @@
         </div>
     </div>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+
+
 <script>
-  // 1. Session Check
-  const loggedInUser = localStorage.getItem('loggedInUser') || localStorage.getItem('username');
-  const userEmail = (localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '').toLowerCase().trim();
 
-  if (!loggedInUser && !userEmail) {
-    window.location.href = 'index.html';
-  }
-
-  // 2. Firebase Configuration
   const firebaseConfig = {
+
     apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+
     authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+
     projectId: "ss-kanhaiyalal-agrawal",
+
     storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+
     messagingSenderId: "776171239833",
+
     appId: "1:776171239833:web:39eea44420db97384b3b08",
+
     measurementId: "G-TQKTRTKBEJ"
+
   };
+
+
 
   if (!firebase.apps.length) {
+
     firebase.initializeApp(firebaseConfig);
+
   }
+
   const db = firebase.firestore();
 
-  // Fix 400 Bad Request
-  db.settings({
-    experimentalForceLongPolling: true,
-    merge: true
-  });
 
-  let studentProfile = {
-    docId: '',
-    email: userEmail,
-    rollNo: null,
-    username: loggedInUser ? loggedInUser.toLowerCase() : ''
-  };
-  
+
+  // Find logged in email/username across all localstorage keys
+
+  function getActiveUserIdentifier() {
+
+    for (let i = 0; i < localStorage.length; i++) {
+
+      const key = localStorage.key(i);
+
+      const val = (localStorage.getItem(key) || '').trim().toLowerCase();
+
+      if (val.includes('@')) return val;
+
+    }
+
+    return (localStorage.getItem('loggedInUser') || localStorage.getItem('LoggedInUser') || '').trim().toLowerCase();
+
+  }
+
+
+
+  let myIdentifiers = [];
+
   let attendanceData = {};
+
   const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-  async function initAttendancePortal() {
-    await fetchStudentProfile();
-    await loadAttendanceOnce();
-  }
 
-  // Match student identity from 'users'
-  async function fetchStudentProfile() {
+
+  async function initAttendancePortal() {
+
+    const activeUser = getActiveUserIdentifier();
+
+    myIdentifiers = [activeUser];
+
+
+
     try {
+
       const uSnap = await db.collection('users').get();
-      uSnap.forEach(doc => {
-        const data = doc.data();
+
+      uSnap.forEach(d => {
+
+        const data = d.data();
+
         const dEmail = (data.email || '').toLowerCase().trim();
+
         const dUser = (data.username || '').toLowerCase().trim();
 
-        if (dEmail === userEmail || dUser === studentProfile.username || doc.id.toLowerCase() === userEmail) {
-          studentProfile.docId = doc.id;
-          studentProfile.email = dEmail || userEmail;
-          studentProfile.rollNo = parseInt(data.rollNo || data.rollNumber || data.roll || 0);
-          studentProfile.username = dUser || studentProfile.username;
+        const dRoll = String(data.rollNo || data.rollNumber || data.roll || '');
+
+
+
+        if (dEmail === activeUser || dUser === activeUser || d.id.toLowerCase() === activeUser) {
+
+          if (d.id) myIdentifiers.push(d.id.toLowerCase());
+
+          if (dEmail) myIdentifiers.push(dEmail);
+
+          if (dUser) myIdentifiers.push(dUser);
+
+          if (dRoll && dRoll !== '0') myIdentifiers.push(dRoll);
+
         }
+
       });
-    } catch (err) {
-      console.warn("Profile fetch error:", err);
+
+    } catch(e) {
+
+      console.warn("User fetch warning:", e);
+
     }
+
+
+
+    myIdentifiers = [...new Set(myIdentifiers.filter(Boolean))];
+
+    loadAttendanceRecords();
+
   }
 
-  // Fetch Attendance matching teacher portal structure
-  async function loadAttendanceOnce() {
+
+
+  async function loadAttendanceRecords() {
+
     try {
-      const snapshot = await db.collection("attendance").get();
+
+      const snap = await db.collection("attendance").get();
+
       attendanceData = {};
 
-      let grandTotalWorkingDays = 0;
-      let grandPresent = 0;
-      let grandAbsent = 0;
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const sMap = data.students || {};
+
+      let grandTotal = 0, grandPresent = 0, grandAbsent = 0;
+
+
+
+      snap.forEach(doc => {
+
+        const d = doc.data();
+
+        const sMap = d.students || {};
+
+
 
         let status = null;
 
-        // Multi-check: Document ID, Email, Roll No, or Username
-        if (studentProfile.docId && sMap[studentProfile.docId]) {
-          status = sMap[studentProfile.docId];
-        } else if (studentProfile.email && sMap[studentProfile.email]) {
-          status = sMap[studentProfile.email];
-        } else if (studentProfile.rollNo && sMap[studentProfile.rollNo]) {
-          status = sMap[studentProfile.rollNo];
-        } else if (studentProfile.rollNo && sMap[String(studentProfile.rollNo)]) {
-          status = sMap[String(studentProfile.rollNo)];
-        } else if (studentProfile.username && sMap[studentProfile.username]) {
-          status = sMap[studentProfile.username];
+
+
+        for (const [key, val] of Object.entries(sMap)) {
+
+          const k = String(key).toLowerCase().trim();
+
+          if (myIdentifiers.includes(k)) {
+
+            status = val;
+
+            break;
+
+          }
+
         }
 
+
+
         if (status) {
-          const dateStr = data.date || (doc.id.includes('_') ? doc.id.split('_').pop() : '');
+
+          const dateStr = d.date || (doc.id.includes('_') ? doc.id.split('_').pop() : '');
+
           if (!dateStr || !dateStr.includes('-')) return;
 
+
+
           const [yearStr, monthStr, dayStr] = dateStr.split('-');
+
           const year = parseInt(yearStr);
+
           const monthIndex = parseInt(monthStr) - 1;
+
           const dayNum = parseInt(dayStr);
+
+
 
           if (isNaN(year) || isNaN(monthIndex) || isNaN(dayNum)) return;
 
+
+
           const monthKey = `${monthNamesArr[monthIndex]} ${year}`;
 
+
+
           if (!attendanceData[monthKey]) {
-            const totalDaysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-            const startDayOffset = new Date(year, monthIndex, 1).getDay();
 
             attendanceData[monthKey] = {
+
               month: monthKey,
+
               year: year,
+
               monthIndex: monthIndex,
-              totalDays: totalDaysInMonth,
-              startDayOffset: startDayOffset,
+
+              totalDays: new Date(year, monthIndex + 1, 0).getDate(),
+
+              startDayOffset: new Date(year, monthIndex, 1).getDay(),
+
               records: {}
+
             };
+
           }
 
-          const standardStatus = (status === 'P') ? 'present' : ((status === 'A') ? 'absent' : 'leave');
-          attendanceData[monthKey].records[dayNum] = standardStatus;
 
-          grandTotalWorkingDays++;
-          if (standardStatus === 'present') {
-            grandPresent++;
-          } else if (standardStatus === 'absent') {
-            grandAbsent++;
-          }
+
+          const st = (status === 'P') ? 'present' : ((status === 'A') ? 'absent' : 'leave');
+
+          attendanceData[monthKey].records[dayNum] = st;
+
+
+
+          grandTotal++;
+
+          if (st === 'present') grandPresent++;
+
+          else if (st === 'absent') grandAbsent++;
+
         }
+
       });
 
-      updateOverviewStats(grandTotalWorkingDays, grandPresent, grandAbsent);
+
+
+      updateOverviewStats(grandTotal, grandPresent, grandAbsent);
+
       initAttendanceView();
-    } catch (error) {
-      console.error("Attendance fetch error:", error);
+
+
+
+    } catch(err) {
+
+      console.error("Attendance Error:", err);
+
     }
+
   }
+
+
 
   function initAttendanceView() {
+
     const container = document.getElementById('attendanceStripsContainer');
+
     if (!container) return;
+
     container.innerHTML = '';
 
-    const monthNames = Object.keys(attendanceData);
 
-    if (monthNames.length === 0) {
+
+    const monthKeys = Object.keys(attendanceData);
+
+    if (!monthKeys.length) {
+
       container.innerHTML = `
+
         <div class="empty-state">
+
           <i class="fa-solid fa-calendar-minus"></i>
+
           <h3>No Attendance Records Published Yet</h3>
+
           <p>When teachers update attendance, monthwise records and overall percentage will be calculated here automatically.</p>
+
         </div>
+
       `;
+
       return;
+
     }
 
-    monthNames.sort((a, b) => {
+
+
+    monthKeys.sort((a, b) => {
+
       const itemA = attendanceData[a];
+
       const itemB = attendanceData[b];
+
       return (itemB.year * 12 + itemB.monthIndex) - (itemA.year * 12 + itemA.monthIndex);
+
     });
 
-    const currentMonthKey = monthNames[0];
+
+
+    const currentMonthKey = monthKeys[0];
+
+
 
     let html = `
+
       <div class="section-title">
+
         <i class="fa-solid fa-clock"></i> Current Academic Month
+
       </div>
+
       <div class="month-strips-wrapper">
+
         ${createStripHTML(currentMonthKey, true)}
+
       </div>
+
     `;
 
-    if (monthNames.length > 1) {
+
+
+    if (monthKeys.length > 1) {
+
       html += `
+
         <div class="section-title">
+
           <i class="fa-solid fa-history"></i> Previous Months History
+
         </div>
+
         <div class="month-strips-wrapper">
+
       `;
-      for (let i = 1; i < monthNames.length; i++) {
-        html += createStripHTML(monthNames[i], false);
+
+      for (let i = 1; i < monthKeys.length; i++) {
+
+        html += createStripHTML(monthKeys[i], false);
+
       }
+
       html += `</div>`;
+
     }
+
+
 
     container.innerHTML = html;
+
   }
+
+
 
   function createStripHTML(monthKey, isCurrent) {
-    const data = attendanceData[monthKey] || { records: {} };
-    let pCount = 0;
-    let totalCount = 0;
 
-    if (data.records) {
-      Object.values(data.records).forEach(st => {
-        if (st === 'present') { pCount++; totalCount++; }
-        else if (st === 'absent' || st === 'leave') { totalCount++; }
-      });
-    }
+    const data = attendanceData[monthKey] || { records: {} };
+
+    let pCount = 0, totalCount = 0;
+
+
+
+    Object.values(data.records || {}).forEach(st => {
+
+      if (st === 'present') { pCount++; totalCount++; }
+
+      else if (st === 'absent' || st === 'leave') { totalCount++; }
+
+    });
+
+
 
     const monthRate = totalCount > 0 ? ((pCount / totalCount) * 100).toFixed(1) : 0;
+
     const activeClass = isCurrent ? 'current-month' : '';
+
     const activeTag = isCurrent ? '<span class="current-tag">ACTIVE</span>' : '';
+
     const iconBg = isCurrent ? '' : 'style="background: rgba(255,255,255,0.05); color: #cbd5e1;"';
 
+
+
     return `
+
       <div class="month-strip ${activeClass}" onclick="openCalendarModal('${monthKey}')">
+
         <div class="strip-info">
+
           <div class="strip-icon" ${iconBg}><i class="fa-solid fa-calendar-day"></i></div>
+
           <div class="strip-text">
+
             <h3>${monthKey} ${activeTag}</h3>
+
             <p>Present: ${pCount} / ${totalCount} Days • Rate: ${monthRate}%</p>
+
           </div>
+
         </div>
+
         <div class="strip-arrow">
+
           <span>View Calendar</span>
+
           <i class="fa-solid fa-chevron-right"></i>
+
         </div>
+
       </div>
+
     `;
+
   }
 
+
+
   function updateOverviewStats(total, present, absent) {
+
     const totalElem = document.getElementById('statTotal');
+
     const presentElem = document.getElementById('statPresent');
+
     const absentElem = document.getElementById('statAbsent');
 
+    const badge = document.getElementById('statusBadge');
+
+    const percentElem = document.getElementById('overallPercentage');
+
+
+
     if (totalElem) totalElem.innerText = total;
+
     if (presentElem) presentElem.innerText = present;
+
     if (absentElem) absentElem.innerText = absent;
 
-    const badge = document.getElementById('statusBadge');
-    const percentElem = document.getElementById('overallPercentage');
+
 
     if (!percentElem || !badge) return;
 
+
+
     if (total === 0) {
+
       percentElem.innerText = '--%';
+
       percentElem.style.color = '#94a3b8';
+
       badge.className = 'status-badge badge-neutral';
+
       badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> No Data Yet`;
+
     } else {
+
       const rate = ((present / total) * 100).toFixed(1);
+
       percentElem.innerText = `${rate}%`;
 
+
+
       if (rate >= 75) {
+
         percentElem.style.color = '#22c55e';
+
         badge.className = 'status-badge badge-safe';
+
         badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Safe Zone`;
+
       } else {
+
         percentElem.style.color = '#f87171';
+
         badge.className = 'status-badge badge-warning';
+
         badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Shortage Warning`;
+
       }
+
     }
+
   }
 
+
+
   function openCalendarModal(monthName) {
+
     const modal = document.getElementById('calendarModal');
+
     const title = document.getElementById('modalMonthTitle');
+
     const grid = document.getElementById('calendarGrid');
+
+
 
     if (!modal || !title || !grid) return;
 
+
+
     title.innerText = `${monthName} Attendance Calendar`;
+
     grid.innerHTML = '';
 
+
+
     const data = attendanceData[monthName];
+
     if (!data) return;
 
+
+
     for (let i = 0; i < (data.startDayOffset || 0); i++) {
+
       const emptyCell = document.createElement('div');
+
       emptyCell.className = 'day-cell empty';
+
       grid.appendChild(emptyCell);
+
     }
+
+
 
     const totalDays = data.totalDays || 30;
+
     for (let day = 1; day <= totalDays; day++) {
+
       const status = (data.records && data.records[day]) ? data.records[day] : 'holiday';
+
       const cell = document.createElement('div');
+
       cell.className = `day-cell is-${status}`;
-      cell.innerHTML = `
-        <span>${day}</span>
-        <span class="status-dot"></span>
-      `;
+
+      cell.innerHTML = `<span>${day}</span><span class="status-dot"></span>`;
+
       grid.appendChild(cell);
+
     }
+
+
 
     modal.style.display = 'flex';
+
   }
+
+
 
   function closeCalendarModal() {
+
     const modal = document.getElementById('calendarModal');
+
     if (modal) modal.style.display = 'none';
+
   }
 
+
+
   window.onclick = function(event) {
+
     const modal = document.getElementById('calendarModal');
-    if (event.target === modal) {
-      closeCalendarModal();
-    }
+
+    if (event.target === modal) closeCalendarModal();
+
   };
 
+
+
   window.onload = initAttendancePortal;
+
 </script>
 
     </body>
