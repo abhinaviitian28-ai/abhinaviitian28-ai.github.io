@@ -467,8 +467,7 @@
 
     </style>
 </head>
-
-    <body>
+<body>
 
     <div class="container">
         
@@ -545,8 +544,8 @@
 
 <script>
   // Session Check
-  const loggedInUser = localStorage.getItem('loggedInUser');
-  const userEmail = localStorage.getItem('user_email');
+  const loggedInUser = localStorage.getItem('loggedInUser') || localStorage.getItem('username');
+  const userEmail = (localStorage.getItem('user_email') || localStorage.getItem('loggedInEmail') || localStorage.getItem('userEmail') || '').toLowerCase().trim();
 
   if (!loggedInUser && !userEmail) {
     window.location.href = 'index.html';
@@ -569,9 +568,16 @@
   }
   const db = firebase.firestore();
 
-  let studentProfile = {};
+  let studentProfile = {
+    docId: '',
+    email: userEmail,
+    rollNo: null,
+    username: loggedInUser ? loggedInUser.toLowerCase() : ''
+  };
+  
   let attendanceData = {};
   let attendanceUnsubscribe = null;
+  const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   // 3. Initialize Portal
   async function initAttendancePortal() {
@@ -579,60 +585,97 @@
     setupAttendanceListener();
   }
 
-  // Fetch Student Profile for Class and Identification
+  // Fetch Student Profile from 'users' collection
   async function fetchStudentProfile() {
     try {
-      const studentsRef = db.collection('students');
-      let querySnapshot = await studentsRef.where('name', '==', loggedInUser).get();
-      
-      if (querySnapshot.empty && userEmail) {
-        querySnapshot = await studentsRef.where('email', '==', userEmail).get();
-      }
+      const uSnap = await db.collection('users').get();
+      uSnap.forEach(doc => {
+        const data = doc.data();
+        const dEmail = (data.email || '').toLowerCase().trim();
+        const dUser = (data.username || '').toLowerCase().trim();
 
-      if (!querySnapshot.empty) {
-        studentProfile = querySnapshot.docs[0].data();
-      }
+        if (dEmail === userEmail || dUser === studentProfile.username || doc.id.toLowerCase() === userEmail) {
+          studentProfile.docId = doc.id;
+          studentProfile.email = dEmail || userEmail;
+          studentProfile.rollNo = parseInt(data.rollNo || data.rollNumber || data.roll || 0);
+          studentProfile.username = dUser || studentProfile.username;
+        }
+      });
     } catch (err) {
       console.log("Error fetching student profile:", err);
     }
   }
 
-  // 4. Firebase Real-time Listener (Logged-in Student Specific)
+  // 4. Firebase Real-time Listener (Synced with Teacher Attendance Model)
   function setupAttendanceListener() {
     if (attendanceUnsubscribe) attendanceUnsubscribe();
 
     attendanceUnsubscribe = db.collection("attendance").onSnapshot((snapshot) => {
       attendanceData = {};
 
-      let studentName = studentProfile.name || loggedInUser;
+      let grandTotalWorkingDays = 0;
+      let grandPresent = 0;
+      let grandAbsent = 0;
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const monthKey = data.month || doc.id;
+        const sMap = data.students || {};
 
-        // Filter attendance records specific to logged-in student
-        let isForStudent = (data.studentName === studentName) || 
-                           (data.studentEmail === userEmail) || 
-                           (data.studentId === studentProfile.rollNo) ||
-                           (!data.studentName && !data.studentEmail); // Fallback for general month doc
+        let status = null;
 
-        if (isForStudent) {
-          if (data.records) {
-            // If doc records directly belong to this student
-            let records = data.records;
-            if (records[studentName]) {
-              records = records[studentName];
-            }
+        // Match student by Firestore Doc ID, Email, Roll No, or Username
+        if (studentProfile.docId && sMap[studentProfile.docId]) {
+          status = sMap[studentProfile.docId];
+        } else if (studentProfile.email && sMap[studentProfile.email]) {
+          status = sMap[studentProfile.email];
+        } else if (studentProfile.rollNo && sMap[studentProfile.rollNo]) {
+          status = sMap[studentProfile.rollNo];
+        } else if (studentProfile.rollNo && sMap[String(studentProfile.rollNo)]) {
+          status = sMap[String(studentProfile.rollNo)];
+        } else if (studentProfile.username && sMap[studentProfile.username]) {
+          status = sMap[studentProfile.username];
+        }
+
+        if (status) {
+          const dateStr = data.date || (doc.id.includes('_') ? doc.id.split('_').pop() : '');
+          if (!dateStr || !dateStr.includes('-')) return;
+
+          const [yearStr, monthStr, dayStr] = dateStr.split('-');
+          const year = parseInt(yearStr);
+          const monthIndex = parseInt(monthStr) - 1;
+          const dayNum = parseInt(dayStr);
+
+          if (isNaN(year) || isNaN(monthIndex) || isNaN(dayNum)) return;
+
+          const monthKey = `${monthNamesArr[monthIndex]} ${year}`;
+
+          if (!attendanceData[monthKey]) {
+            const totalDaysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            const startDayOffset = new Date(year, monthIndex, 1).getDay();
+
             attendanceData[monthKey] = {
               month: monthKey,
-              records: records,
-              totalDays: data.totalDays || 30,
-              startDayOffset: data.startDayOffset || 0
+              year: year,
+              monthIndex: monthIndex,
+              totalDays: totalDaysInMonth,
+              startDayOffset: startDayOffset,
+              records: {}
             };
+          }
+
+          const standardStatus = (status === 'P') ? 'present' : ((status === 'A') ? 'absent' : 'leave');
+          attendanceData[monthKey].records[dayNum] = standardStatus;
+
+          grandTotalWorkingDays++;
+          if (standardStatus === 'present') {
+            grandPresent++;
+          } else if (standardStatus === 'absent') {
+            grandAbsent++;
           }
         }
       });
 
+      updateOverviewStats(grandTotalWorkingDays, grandPresent, grandAbsent);
       initAttendanceView();
     }, (error) => {
       console.error("Firebase attendance error:", error);
@@ -646,7 +689,6 @@
 
     const monthNames = Object.keys(attendanceData);
 
-    // If teacher has not published any attendance yet
     if (monthNames.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
@@ -655,35 +697,16 @@
           <p>When teachers update attendance, monthwise records and overall percentage will be calculated here automatically.</p>
         </div>
       `;
-      updateOverviewStats(0, 0, 0);
       return;
     }
 
-    // Calculate Overall Stats
-    let grandTotalWorkingDays = 0;
-    let grandPresent = 0;
-    let grandAbsent = 0;
-
-    monthNames.forEach(month => {
-      const data = attendanceData[month];
-      if (data && data.records) {
-        Object.values(data.records).forEach(status => {
-          if (status === 'present') {
-            grandPresent++;
-            grandTotalWorkingDays++;
-          } else if (status === 'absent') {
-            grandAbsent++;
-            grandTotalWorkingDays++;
-          } else if (status === 'leave') {
-            grandTotalWorkingDays++;
-          }
-        });
-      }
+    // Sort newest month first
+    monthNames.sort((a, b) => {
+      const itemA = attendanceData[a];
+      const itemB = attendanceData[b];
+      return (itemB.year * 12 + itemB.monthIndex) - (itemA.year * 12 + itemA.monthIndex);
     });
 
-    updateOverviewStats(grandTotalWorkingDays, grandPresent, grandAbsent);
-
-    // Render Current Month & Previous Months Strips
     const currentMonthKey = monthNames[0];
 
     // Section 1: Current Month
@@ -795,14 +818,12 @@
     const data = attendanceData[monthName];
     if (!data) return;
 
-    // Offset empty cells
     for (let i = 0; i < (data.startDayOffset || 0); i++) {
       const emptyCell = document.createElement('div');
       emptyCell.className = 'day-cell empty';
       grid.appendChild(emptyCell);
     }
 
-    // Days
     const totalDays = data.totalDays || 30;
     for (let day = 1; day <= totalDays; day++) {
       const status = (data.records && data.records[day]) ? data.records[day] : 'holiday';
@@ -834,4 +855,4 @@
 </script>
 
 </body>
-</html>
+</html>  
