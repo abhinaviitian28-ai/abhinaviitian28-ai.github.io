@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Attendance & Student Info - SSKL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: #070d19; color: #fff; padding: 14px; min-height: 100vh; }
+    .container { max-width: 720px; margin: 0 auto; }
+
+    /* Top Header */
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #1e293b; padding: 12px 16px; border-radius: 12px;
+      border: 1px solid #38bdf840; margin-bottom: 14px; gap: 10px;
+    }
+    .header h2 { font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .btn-dash {
+      color: #38bdf8; background: #38bdf81a; border: 1px solid #38bdf840;
+      padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* Minimal Box */
+    .box {
+      background: #0f172a; border: 1px solid #334155; border-radius: 14px;
+      padding: 16px; margin-bottom: 14px;
+    }
+
+    /* Selection Grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    label { font-size: 11px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 4px; }
+    .inp {
+      width: 100%; padding: 8px 10px; background: #1e293b; border: 1px solid #475569;
+      border-radius: 8px; color: #fff; font-size: 12px; outline: none;
+    }
+    .inp:focus { border-color: #38bdf8; }
+
+    /* Buttons */
+    .btn-blue {
+      width: 100%; padding: 10px; background: #0284c7; border: none;
+      border-radius: 8px; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer;
+    }
+    .btn-blue:hover { background: #0369a1; }
+
+    .btn-green {
+      width: 100%; padding: 12px; background: #16a34a; border: none;
+      border-radius: 10px; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 12px;
+    }
+    .btn-green:hover { background: #15803d; }
+
+    /* Stats Bar */
+    .stats { display: flex; gap: 8px; margin-bottom: 12px; }
+    .stat { flex: 1; background: #1e293b; padding: 8px; border-radius: 8px; text-align: center; font-size: 11px; }
+    .stat b { display: block; font-size: 15px; }
+
+    /* Action Bar */
+    .quick-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .q-btn {
+      padding: 6px 12px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+
+    /* Student List */
+    .list { display: flex; flex-direction: column; gap: 8px; max-height: 460px; overflow-y: auto; }
+    .item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #1e293b; padding: 9px 12px; border-radius: 8px; border: 1px solid #334155;
+      gap: 10px;
+    }
+    .item-info {
+      display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
+      min-width: 0; cursor: pointer;
+    }
+    .item-info:hover .s-name { color: #38bdf8; text-decoration: underline; }
+    
+    .roll {
+      background: #38bdf820; color: #38bdf8; padding: 2px 6px; border-radius: 6px;
+      font-size: 11px; min-width: 28px; text-align: center; flex-shrink: 0;
+    }
+    .s-name {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: 0.2s;
+    }
+    .btn-info-icon {
+      color: #94a3b8; font-size: 12px; margin-left: 2px;
+    }
+
+    /* Toggles */
+    .toggles { display: flex; gap: 4px; flex-shrink: 0; }
+    .t-btn {
+      width: 32px; height: 30px; border-radius: 6px; border: 1px solid #475569;
+      background: #0f172a; color: #94a3b8; font-weight: 700; font-size: 11px; cursor: pointer;
+    }
+    .t-btn.p { background: #22c55e; color: #fff; border-color: #22c55e; }
+    .t-btn.a { background: #ef4444; color: #fff; border-color: #ef4444; }
+    .t-btn.l { background: #eab308; color: #fff; border-color: #eab308; }
+
+    .no-data { text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px; }
+
+    /* Student Details Modal Popup */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);
+      display: none; justify-content: center; align-items: center; z-index: 1000;
+      padding: 16px;
+    }
+    .modal-content {
+      background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px; width: 100%; max-width: 400px; padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;
+      animation: popIn 0.25s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 14px;
+    }
+    .modal-title { font-size: 15px; font-weight: 700; color: #38bdf8; }
+    .modal-close {
+      background: transparent; border: none; color: #94a3b8; font-size: 18px;
+      cursor: pointer; padding: 4px;
+    }
+    .modal-close:hover { color: #fff; }
+
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12.5px;
+    }
+    .detail-label { color: #94a3b8; }
+    .detail-value { color: #fff; font-weight: 600; text-align: right; word-break: break-all; }
+
+    .copy-btn {
+      background: #38bdf820; border: 1px solid #38bdf850; color: #38bdf8;
+      padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;
+      margin-left: 6px; font-weight: 600;
+    }
+    .copy-btn:hover { background: #38bdf840; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h2><i class="fa-solid fa-clipboard-user"></i> Attendance & Students</h2>
+      <a href="teacher_dashboard.html" class="btn-dash"><i class="fa-solid fa-house"></i> Home</a>
+    </div>
+
+    <!-- Filter Selection Box -->
+    <div class="box">
+      <div class="grid">
+        <div>
+          <label>Date</label>
+          <input type="date" id="attDate" class="inp">
+        </div>
+        <div>
+          <label>Class</label>
+          <select id="attClass" class="inp" onchange="toggleStream()">
+            <option value="Class 9th">Class 9th</option>
+            <option value="Class 10th">Class 10th</option>
+            <option value="Class 11th">Class 11th</option>
+            <option value="Class 12th">Class 12th</option>
+          </select>
+        </div>
+        <div>
+          <label>Section</label>
+          <select id="attSection" class="inp">
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+          </select>
+        </div>
+        <div id="streamBox" style="display: none;">
+          <label>Stream</label>
+          <select id="attStream" class="inp">
+            <option value="PCM">PCM</option>
+            <option value="PCB">PCB</option>
+            <option value="Commerce">Commerce</option>
+            <option value="Arts">Arts</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-blue" onclick="loadList()"><i class="fa-solid fa-arrow-down"></i> Load Student Sheet</button>
+    </div>
+
+    <!-- Attendance Sheet Container -->
+    <div id="sheetCard" class="box" style="display: none;">
+      <!-- Stats Counters -->
+      <div class="stats">
+        <div class="stat"><b id="stTotal" style="color:#38bdf8">0</b>Total</div>
+        <div class="stat"><b id="stP" style="color:#4ade80">0</b>Present</div>
+        <div class="stat"><b id="stA" style="color:#f87171">0</b>Absent</div>
+        <div class="stat"><b id="stPct" style="color:#fbbf24">0%</b>Rate</div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="quick-bar" id="quickBar" style="display: none;">
+        <button class="q-btn" style="background:#22c55e25; color:#4ade80;" onclick="markAll('P')"><i class="fa-solid fa-check"></i> All Present</button>
+        <button class="q-btn" style="background:#ef444425; color:#f87171;" onclick="markAll('A')"><i class="fa-solid fa-xmark"></i> All Absent</button>
+        <button class="q-btn" style="background:#38bdf825; color:#38bdf8;" onclick="copyAllEmails()"><i class="fa-solid fa-envelope"></i> Copy All Emails</button>
+      </div>
+
+      <!-- Real Student List -->
+      <div id="studentList" class="list"></div>
+
+      <!-- Save Attendance Button -->
+      <button id="saveBtn" class="btn-green" style="display: none;" onclick="saveRecord()"><i class="fa-solid fa-floppy-disk"></i> Save Attendance</button>
+    </div>
+  </div>
+
+  <!-- Student Info Modal -->
+  <div class="modal-overlay" id="studentModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-id-card"></i> Student Details</div>
+        <button class="modal-close" onclick="closeModalDirect()">&times;</button>
+      </div>
+      <div id="modalBody">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const loggedInTeacher = localStorage.getItem('loggedInTeacher') || localStorage.getItem('loggedInUser') || "Teacher";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1mrLB5XX6KgDTHyEDEoOhujQWcXHsbn4",
+      authDomain: "ss-kanhaiyalal-agrawal.firebaseapp.com",
+      projectId: "ss-kanhaiyalal-agrawal",
+      storageBucket: "ss-kanhaiyalal-agrawal.firebasestorage.app",
+      messagingSenderId: "776171239833",
+      appId: "1:776171239833:web:39eea44420db97384b3b08",
+      measurementId: "G-TQKTRTKBEJ"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let students = [];
+
+    window.onload = () => {
+      document.getElementById('attDate').value = new Date().toISOString().split('T')[0];
+      toggleStream();
+    };
+
+    function toggleStream() {
+      const cls = document.getElementById('attClass').value;
+      document.getElementById('streamBox').style.display = (cls.includes('11') || cls.includes('12')) ? 'block' : 'none';
+    }
+
+    async function loadList() {
+      const date = document.getElementById('attDate').value;
+      const cls = document.getElementById('attClass').value;
+      const sec = document.getElementById('attSection').value;
+      const stream = (cls.includes('11') || cls.includes('12')) ? document.getElementById('attStream').value : 'General';
+
+      if (!date) return alert("कृपया तारीख चुनें!");
+
+      document.getElementById('sheetCard').style.display = 'block';
+      const container = document.getElementById('studentList');
+      const quickBar = document.getElementById('quickBar');
+      const saveBtn = document.getElementById('saveBtn');
+
+      container.innerHTML = '<div class="no-data"><i class="fa-solid fa-spinner fa-spin"></i> डेटाबेस से छात्रों की लिस्ट लोड हो रही है...</div>';
+      quickBar.style.display = 'none';
+      saveBtn.style.display = 'none';
+
+      // 1. Check existing attendance
+      const docId = `${cls.replace(/\s+/g,'')}_${sec}_${stream}_${date}`;
+      let oldData = {};
+      try {
+        const snap = await db.collection('attendance').doc(docId).get();
+        if (snap.exists) oldData = snap.data().students || {};
+      } catch(e) {
+        console.warn("No previous record:", e);
+      }
+
+      // 2. Fetch REAL registered students from 'users'
+      let q = db.collection('users')
+                .where('role', '==', 'student')
+                .where('class', '==', cls)
+                .where('section', '==', sec);
+
+      if (cls.includes('11') || cls.includes('12')) {
+        q = q.where('stream', '==', stream);
+      }
+
+      q.get().then(snap => {
+        students = [];
+        
+        if (snap.empty) {
+          container.innerHTML = `<div class="no-data"><i class="fa-solid fa-triangle-exclamation"></i> इस क्लास/सेक्शन में कोई छात्र नहीं मिला।</div>`;
+          calc();
+          return;
+        }
+
+        snap.forEach(doc => {
+          const data = doc.data();
+          const roll = parseInt(data.rollNumber || data.roll || 0);
+          students.push({
+            id: doc.id,
+            name: data.fullName || data.name || `Student ${roll}`,
+            email: data.email || 'N/A',
+            phone: data.phone || data.mobile || data.phoneNumber || 'N/A',
+            gender: data.gender || 'N/A',
+            class: cls,
+            section: sec,
+            stream: stream,
+            roll: roll,
+            status: oldData[doc.id] || oldData[roll] || 'P'
+          });
+        });
+
+        // Sort ascending by Roll Number
+        students.sort((a, b) => a.roll - b.roll);
+
+        quickBar.style.display = 'flex';
+        saveBtn.style.display = 'block';
+        render();
+      }).catch(err => {
+        console.error("Fetch error:", err);
+        container.innerHTML = `<div class="no-data"><i class="fa-solid fa-circle-exclamation"></i> डेटाबेस एरर! कृपया इंटरनेट चेक करें।</div>`;
+      });
+    }
+
+    function render() {
+      const container = document.getElementById('studentList');
+      container.innerHTML = '';
+
+      students.forEach((s, idx) => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="item-info" onclick="showStudentDetails(${idx})" title="Click to view details & email">
+            <span class="roll">${s.roll < 10 ? '0' + s.roll : s.roll}</span>
+            <span class="s-name">${s.name}</span>
+            <i class="fa-solid fa-circle-info btn-info-icon"></i>
+          </div>
+          <div class="toggles">
+            <button class="t-btn ${s.status === 'P' ? 'p' : ''}" onclick="setSt(${idx},'P')">P</button>
+            <button class="t-btn ${s.status === 'A' ? 'a' : ''}" onclick="setSt(${idx},'A')">A</button>
+            <button class="t-btn ${s.status === 'L' ? 'l' : ''}" onclick="setSt(${idx},'L')">L</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      calc();
+    }
+
+    function setSt(idx, st) { 
+      students[idx].status = st; 
+      render(); 
+    }
+
+    function markAll(st) { 
+      students.forEach(s => s.status = st); 
+      render(); 
+    }
+
+    function calc() {
+      const total = students.length;
+      const p = students.filter(s => s.status === 'P').length;
+      const a = students.filter(s => s.status === 'A').length;
+      document.getElementById('stTotal').innerText = total;
+      document.getElementById('stP').innerText = p;
+      document.getElementById('stA').innerText = a;
+      document.getElementById('stPct').innerText = total ? Math.round((p / total) * 100) + '%' : '0%';
+    }
+
+    // Modal Details Viewer
+    function showStudentDetails(idx) {
+      const s = students[idx];
+      const modal = document.getElementById('studentModal');
+      const body = document.getElementById('modalBody');
+
+      body.innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">Full Name</span>
+          <span class="detail-value" style="color: #38bdf8;">${s.name}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Roll Number</span>
+          <span class="detail-value">${s.roll}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Class & Sec</span>
+          <span class="detail-value">${s.class} (${s.section})</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Stream</span>
+          <span class="detail-value">${s.stream}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Gender</span>
+          <span class="detail-value">${s.gender}</span>
+        </div>
+        <div class="detail-row" style="background: rgba(56, 189, 248, 0.08); padding: 10px 8px; border-radius: 8px; margin-top: 8px;">
+          <span class="detail-label"><i class="fa-solid fa-envelope"></i> Email</span>
+          <span class="detail-value">
+            ${s.email}
+            ${s.email !== 'N/A' ? `<button class="copy-btn" onclick="copyText('${s.email}')"><i class="fa-regular fa-copy"></i> Copy</button>` : ''}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone</span>
+          <span class="detail-value">${s.phone}</span>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeModal(e) {
+      if (e.target.id === 'studentModal') {
+        document.getElementById('studentModal').style.display = 'none';
+      }
+    }
+
+    function closeModalDirect() {
+      document.getElementById('studentModal').style.display = 'none';
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert("✅ Email copied: " + text);
+      }).catch(() => {
+        alert("Copied: " + text);
+      });
+    }
+
+    // Copy All Class Emails At Once
+    function copyAllEmails() {
+      const validEmails = students.map(s => s.email).filter(em => em && em !== 'N/A');
+      if (!validEmails.length) return alert("कोई मान्य ईमेल नहीं मिला!");
+
+      const allString = validEmails.join(', ');
+      navigator.clipboard.writeText(allString).then(() => {
+        alert(`✅ ${validEmails.length} छात्रों की ईमेल कॉपी हो गई!`);
+      }).catch(() => {
+        prompt("Emails copy karein:", allString);
+      });
+    }
+
+    // Save Attendance Record
+    async function saveRecord() {
+      const date = document.getElementById('attDate').value;
+      const cls = document.getElementById('attClass').value;
+      const sec = document.getElementById('attSection').value;
+      const stream = (cls.includes('11') || cls.includes('12')) ? document.getElementById('attStream').value : 'General';
+
+      if (!students.length) return alert("कोई छात्र नहीं है!");
+
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true; 
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      const map = {};
+      students.forEach(s => map[s.id || s.roll] = s.status);
+
+      const p = students.filter(s => s.status === 'P').length;
+      const a = students.filter(s => s.status === 'A').length;
+      const l = students.filter(s => s.status === 'L').length;
+      const docId = `${cls.replace(/\s+/g,'')}_${sec}_${stream}_${date}`;
+
+      try {
+        await db.collection('attendance').doc(docId).set({
+          date,
+          class: cls,
+          section: sec,
+          stream,
+          teacher: loggedInTeacher,
+          total: students.length,
+          present: p,
+          absent: a,
+          leave: l,
+          percentage: students.length ? Math.round((p / students.length) * 100) : 0,
+          students: map,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        alert("✅ अटेंडेंस सफलतापूर्वक सेव हो गई!");
+      } catch(e) {
+        console.error("Save error:", e);
+        alert("अटेंडेंस सेव करने में त्रुटि हुई!");
+      }
+      btn.disabled = false; 
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Attendance';
+    }
+  </script>
+</body>
+</html>
